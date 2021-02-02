@@ -1,0 +1,7 @@
+name: sauronlab
+channels:
+  - conda-forge
+dependencies:
+  - python>=3.8,<4
+  - sauronlab>=0.1,<0.2
+  - chemserve>=0.1,<0.2
