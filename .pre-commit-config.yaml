@@ -4,14 +4,6 @@ minimum_pre_commit_version: 2.9.0
 # Don't set language_version -- it's only useful if we have multiple
 # python versions or our build uses a different env than runtime
 repos:
-  # --- Meta hooks ---
-  #- hooks:
-  # This one is useful, but it will fail if, e.g., you don't have a single yaml file
-  #  - id: check-hooks-apply
-  # This one will fail, e.g., if you don't have a recipes/ file, which is excluded here
-  #   - id: check-useless-excludes
-  #  repo: meta
-
   # --- Built-in hooks --
   - hooks:
       - id: check-symlinks
@@ -19,14 +11,8 @@ repos:
       - id: fix-byte-order-marker
       - id: end-of-file-fixer
       - id: check-merge-conflict
-      - id: debug-statements
       - id: check-toml
       - id: check-json
-      # This one is slow and doesn't check for much
-      # - detect-private-key
-      # This is very slow, so I recommend disabling it.
-      #- id: check-added-large-files
-      # The Conda recipe meta.yaml files are actually templates, not valid YAML
       - id: check-yaml
         exclude: ^recipes/.*
     repo: https://github.com/pre-commit/pre-commit-hooks
@@ -44,7 +30,7 @@ repos:
       - id: nbstripout
         files: ".ipynb"
     repo: https://github.com/kynan/nbstripout
-    rev: master
+    rev: 0.3.9
 
   # --- Linters ---
   - hooks:

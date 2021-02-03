@@ -1,6 +1,6 @@
 cff-version: 1.1.0
 message: Software reference
-title: chemfish
+title: sauronlab
 version: 0.1.0
 abstract: Zebrafish behavioral profiling and visualization in Python.
 authors:

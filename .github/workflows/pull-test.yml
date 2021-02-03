@@ -5,18 +5,30 @@ on:
   pull_request:
     branches:
       - main
-      - master
 jobs:
   build:
-    runs-on: ubuntu-20.04
     strategy:
       max-parallel: 1
       matrix:
+        os: ["ubuntu-20.04", "windows-2019", "macos-10.15"]
         python-version:
           - 3.9
+    runs-on: "${{ matrix.os }}"
+    services:
+      mysql:
+        image: mariadb:latest
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: test
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Initialize MariaDB
+        run: |
+          mysqladmin --host=127.0.0.1 ping
       - name: "Set up Python ${{ matrix.python-version }}"
         uses: actions/setup-python@v2
         with:

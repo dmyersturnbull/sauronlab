@@ -5,8 +5,8 @@ build:
     my-tests:
       dependencies:
         before:
-          - "pip install --upgrade tox>=3.21,<4.0"
-          - "pip install --upgrade poetry>=1.1.4,<2.0"
+          - "pip install --upgrade 'tox>=3.21,<4.0'"
+          - "pip install --upgrade 'poetry>=1.1.4,<2.0'"
     analysis:
       project_setup:
         override:

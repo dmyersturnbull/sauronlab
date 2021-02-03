@@ -2,6 +2,9 @@ name: sauronlab
 channels:
   - conda-forge
 dependencies:
-  - python>=3.8,<4
+  - python>=3.9,<3.10
   - sauronlab>=0.1,<0.2
+  - tables>=3.6,<4.0
+  - jupyterlab>=3.0,<4.0
+  - ipympl>=0.6,<1.0
   - chemserve>=0.1,<0.2

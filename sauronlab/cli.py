@@ -1,54 +1,157 @@
-"""
-Command-line interface for sauronlab.
+#!/usr/bin/env python3
+# coding=utf-8
 
-Copyright 2021 Douglas Myers-Turnbull
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
-or implied. See the License for the specific language governing
-permissions and limitations under the License.
-
-"""
-
-from __future__ import annotations
-
+import enum
 import logging
-import time
+from datetime import datetime
+from pathlib import Path
+from typing import Optional
 
-import typer
+from pocketutils.core import SmartEnum
+from pocketutils.tools.call_tools import CallTools
+from pocketutils.tools.filesys_tools import FilesysTools
+from pocketutils.tools.string_tools import StringTools
 
-from sauronlab import __title__, __version__, __copyright__, metadata
+from sauronlab.core import SauronlabResources, log_factory, logger
+
+ch = logging.StreamHandler()
+logger.addHandler(ch)
+ch.setFormatter(log_factory.formatter)
+logger.setLevel(logging.INFO)
 
 
-logger = logging.getLogger(__package__)
-cli = typer.Typer(context=context)
+class SauronlabCmd(SmartEnum):
+    """"""
+
+    init = enum.auto()
+    parrot = enum.auto()
+    video = enum.auto()
 
 
-def info(n_seconds: float = 0.01, verbose: bool = False) -> None:
-    """
-    Get info about sauronlab.
+class SauronlabProcessor:
+    """"""
 
-    Args:
-        n_seconds: Number of seconds to wait between processing.
-        verbose: Output more info
-    """
-    typer.echo(f"{__title__} version {__version__}, {__copyright__}")
-    if verbose:
-        typer.echo(str(metadata.__dict__))
-    total = 0
-    with typer.progressbar(range(100)) as progress:
-        for value in progress:
-            time.sleep(n_seconds)
-            total += 1
-    typer.echo(f"Processed {total} things.")
+    def run(self, args) -> None:
+        """
+
+
+        Args:
+            args:
+
+        Returns:
+
+        """
+        import argparse
+
+        parser = argparse.ArgumentParser("""Install, update, or initialize Sauronlab""")
+        # noinspection PyTypeChecker
+        parser.add_argument("cmd", type=SauronlabCmd.of, choices=[s for s in SauronlabCmd])
+        parser.add_argument("args", nargs="*")
+        opts = parser.parse_args(args)
+        self.process(opts.cmd, opts.args)
+
+    def process(self, cmd: SauronlabCmd, args) -> None:
+        """
+
+
+        Args:
+            cmd: SauronlabCmd:
+            args:
+
+        Returns:
+
+        """
+        if cmd == SauronlabCmd.init:
+            self.init()
+        elif cmd == SauronlabCmd.video:
+            self.download_video(args)
+        else:
+            print(SauronlabResources.text("art", cmd.name + ".txt"))
+
+    # noinspection PyTypeChecker
+    def init(self) -> None:
+        """"""
+        logger.notice("Setting up sauronlab configuration...")
+        n_created = sum(
+            [
+                self._copy_if(
+                    Path.home() / ".sauronlab" / "valar_config.json",
+                    SauronlabResources.path("example_valar_config.json"),
+                ),
+                self._copy_if(
+                    Path.home() / ".sauronlab" / "sauronlab.config",
+                    SauronlabResources.path("example.sauronlab.config"),
+                ),
+                self._copy_if(
+                    Path.home() / ".sauronlab" / "jupyter_template.txt",
+                    SauronlabResources.path("jupyter_template.txt"),
+                ),
+                self._copy_if(
+                    Path.home() / ".sauronlab" / "sauronlab.mplstyle",
+                    SauronlabResources.path("styles/default.mplstyle"),
+                ),
+                self._copy_if(
+                    Path.home() / ".sauronlab" / "sauronlab_viz.properties",
+                    SauronlabResources.path("styles/basic.viz.properties"),
+                ),
+            ]
+        )
+        if n_created > 0:
+            logger.notice("Finished. Edit these files as needed.")
+        else:
+            logger.notice("Finished. You already have all required config files.")
+
+    def download_video(self, args):
+        """
+
+
+        Args:
+            args:
+
+        """
+        from sauronlab.caches.video_caches import VideoCache
+
+        cache = VideoCache()
+        n_exists = sum([not cache.has_video(v) for v in args])
+        for arg in args:
+            cache.download(arg)
+        logger.notice(f"Downloaded {n_exists} videos.")
+
+    def _copy_if(self, dest: Path, source: Path) -> bool:
+        """
+
+
+        Args:
+            dest: Path:
+            source: Path:
+
+        Returns:
+
+        """
+        import shutil
+
+        if not dest.exists():
+            # noinspection PyTypeChecker
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            # noinspection PyTypeChecker
+            shutil.copy(source, dest)
+            logger.info(f"Copied {source} → {dest}")
+            return True
+        else:
+            logger.info(f"Skipping {dest}")
+            return False
+
+
+def main():
+    """"""
+    # noinspection PyBroadException
+    try:
+        SauronlabProcessor().run(None)
+    except Exception:
+        logger.fatal("Failed while running command.", exc_info=True)
 
 
 if __name__ == "__main__":
-    cli()
+    main()
+
+__all__ = ["SauronlabProcessor", "SauronlabCmd"]

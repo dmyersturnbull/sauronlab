@@ -38,7 +38,7 @@ class TestResources:
     ``TestResources.temp_dir``.
     """
 
-    logger = logging.getLogger("TYRANNO.TEST")
+    logger = logging.getLogger("SAURONLAB.TEST")
 
     _start_dt = datetime.now()
     _start_ns = time.monotonic_ns()

@@ -3,25 +3,31 @@
 name: Build & test
 on:
   push:
-    branches:
-      - main
-      - master
+    branches: [main]
 jobs:
   build:
-    runs-on: ubuntu-20.04
     strategy:
       max-parallel: 1
       matrix:
+        os: ["ubuntu-20.04", "windows-2019", "macos-10.15"]
         python-version:
           - 3.9
+    runs-on: "${{ matrix.os }}"
+    services:
+      mysql:
+        image: mariadb:latest
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: test
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: read action options
-        id: read_options
+      - name: Initialize MariaDB
         run: |
-          json=`cat .github/action-options.json`
-          USE_SLACK=`echo $(jq -r '.use_slack' <<< "$json")`
+          mysqladmin --host=127.0.0.1 ping
       - name: "Set up Python ${{ matrix.python-version }}"
         uses: actions/setup-python@v2
         with:
@@ -32,19 +38,9 @@ jobs:
       - name: Test with tox
         run: |
           tox -v
-      - name: Build the Docker image
+      - name: Update coveralls
         run: |
-          docker build .
-      - name: Update coveralls/codecov
-        run: |
-          pip install coveralls codecov
-          coveralls || true
-          codecov || true
-      - name: Send Slack notification
-        uses: 8398a7/action-slack@v3
-        with:
-          status: ${{ job.status }}
-          fields: repo,message,commit,action,workflow
+          pip install 'coveralls>=3,<4'
+          coveralls --service=github || true
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        if: always() && steps.read_options.outputs.USE_SLACK=='true'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
