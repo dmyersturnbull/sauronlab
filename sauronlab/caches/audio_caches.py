@@ -143,7 +143,7 @@ class AudioStimulusCache(AnAudioStimulusCache):
         stimulus = Stimuli.fetch(stimulus)
         path = self.load(stimulus)
         try:
-            data, sampling_rate = librosa.load(str(path))
+            data, sampling_rate = soundfile.load(str(path))
         except Exception:
             raise LoadError(f"Failed to read file {path}")
         return StimulusWaveform(

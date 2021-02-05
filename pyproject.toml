@@ -41,11 +41,13 @@ classifiers = [
     "Typing :: Typed"
 ]
 
-
 [tool.poetry.urls]
 CI = "https://github.com/dmyersturnbull/sauronlab/actions"
 Issues = "https://github.com/dmyersturnbull/sauronlab/issues"
 Download = "https://pypi.org/project/sauronlab/"
+
+[tool.poetry.scripts]
+sauronlab = "sauronlab.cli:main"
 
 
 #########################################################################################
@@ -59,11 +61,9 @@ colorama                       = ">=0.4, <1.0"
 cycler                         = ">=0.10, <1.0"
 fuzzywuzzy                     = ">=0.18, <1.0"
 joblib                         = "^1.0"
-librosa                        = "^0.8"
+h5py                           = ">=3.1, <4.0"
 matplotlib                     = ">=3.3, <4.0"
 natsort                        = "^7"
-numba                          = {git="https://github.com/numba/numba.git", tag="0.53.0rc1"}
-llvmlite                       = {git="https://github.com/numba/llvmlite.git", tag="v0.36.0rc1"}
 numpy                          = ">=1.20, <2.0"
 pandas                         = ">=1.2, <2.0"
 peewee                         = ">=3.14, <4.0"
@@ -78,10 +78,8 @@ typer                          = ">=0.3, <1.0"
 decorateme                     = ">=0.2, <1.0"
 typeddfs                       = ">=0.4, <1.0"
 # we're actually using "biochem" too, but we don't need any extra dependencies
-#pocketutils                    = {version=">=0.4, <1.0", extras=["tools", "notebooks", "plotting"]}
-pocketutils                    = {version=">=0.4, <1.0", extras=["tools"]}
+pocketutils                    = {version=">=0.4, <1.0", extras=["tools", "notebooks", "plotting"]}
 #valarpy                        = "^3.0"
-
 #python-levenshtein             = {optional = true, version="^0.12"}
 
 [tool.poetry.dev-dependencies]

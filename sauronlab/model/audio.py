@@ -1,36 +1,11 @@
 from __future__ import annotations
 from dataclasses import dataclass
 
-import pydub
-
 from sauronlab.core.core_imports import *
 
 
 class AudioTools:
     """ """
-
-    @classmethod
-    def listen(cls, path: Union[str, PurePath, bytes]):
-        """
-        Returns an audio container that Jupyter notebook will display.
-        Must be run from a Jupyter notebook.
-        Will raise an ImportError if IPython cannot be imported.
-
-        Args:
-            path: The local path to the audio file
-
-        Returns:
-            A jupyter notebook ipd.Audio object
-
-        """
-        # noinspection PyPackageRequirements
-        import IPython.display as ipd
-
-        if isinstance(path, (str, PurePath)):
-            path = str(Path(path))
-            return ipd.Audio(filename=path)
-        else:
-            return ipd.Audio(data=path)
 
     @classmethod
     def save(
@@ -108,7 +83,7 @@ class Waveform:
         """
         if minimum < 0 or maximum > 255:
             raise OutOfRangeError("Must be between 0 and 255")
-        y = self.downsample(ms_freq, resample=False).data
+        y = self.downsample(ms_freq).data
         y = (y - y.min()) * (maximum - minimum) / (y.max() - y.min()) + minimum
         y = y.round().astype(np.int32)
         s = Waveform(self.name, self.path, y, 1000, minimum, maximum, self.description)
@@ -135,23 +110,18 @@ class Waveform:
             self.name, self.path, y, self.sampling_rate, minimum, maximum, self.description
         )
 
-    def downsample(self, new_sampling_hertz: float, resample: bool = True) -> Waveform:
+    def downsample(self, new_sampling_hertz: float) -> Waveform:
         """
         Downsamples to a new rate.
 
         Args:
             new_sampling_hertz: A float such as 44100
-            resample: Use ``librosa.resample``, which is more accurate but too slow for large audio files;
-                      otherwise splits into discrete chunks and calculates the mean for each chunk
 
         Returns:
             The same Waveform as a copy
         """
         t0 = time.monotonic()
-        if resample:
-            z = self._downsample(new_sampling_hertz)
-        else:
-            z = self._ds_chunk_mean(new_sampling_hertz)
+        z = self._ds_chunk_mean(new_sampling_hertz)
         logger.debug(f"Downsampling waveform ({self.name}) took {round(time.monotonic()-t0, 1)} s")
         return z
 
@@ -178,33 +148,6 @@ class Waveform:
             self.name,
             self.path,
             means,
-            new_sampling_hertz,
-            self.minimum,
-            self.maximum,
-            self.description,
-        )
-
-    def _downsample(self, new_sampling_hertz: float) -> Waveform:
-        """
-        Downsamples to a new rate using librosa.resample.
-
-        Args:
-            new_sampling_hertz: A float such as 44100
-
-        Returns:
-            The same Waveform as a copy
-
-        """
-        if new_sampling_hertz > self.sampling_rate:
-            raise OutOfRangeError(
-                f"New sampling rate is higher than current of {self.sampling_rate}"
-            )
-        # setting res_type='scipy' seems to allow downsampling to smaller values without DivideByZero errors
-        y = librosa.resample(self.data, self.sampling_rate, new_sampling_hertz, res_type="scipy")
-        return Waveform(
-            self.name,
-            self.path,
-            y,
             new_sampling_hertz,
             self.minimum,
             self.maximum,
