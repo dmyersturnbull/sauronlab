@@ -78,8 +78,12 @@ class ValarTools:
     ) -> Union[None, np.array, bytes, str, Image.Image]:
         """
         Convert the sensor data to its appropriate type as defined by `sensors.data_type`.
-        WARNING:
+
+        Warning:
             Currently does not handle `sensors.data_type=='utf8_char'`. Currently there are no sensors in Valar with this data type.
+
+        Note:
+            This function will probably be deprecated soon, replaced by valarpy model methods
 
         Args:
             sensor: The name, ID, or instance of the sensors row
@@ -131,29 +135,32 @@ class ValarTools:
     @classmethod
     def stimulus_wavelength_colors(cls) -> Mapping[str, str]:
         """
-        Get a mapping from stimulus names to a good approximation as a single color.
+        Gets a mapping from stimulus names to a good approximation as a single color.
         *Only covers LED stimuli, plus the IR.*
 
         Returns:
-
+            A mapping from (some) stimulus names to 6-digit RGB hex codes prefixed by ``#``
         """
         return dict(InternalTools.load_resource("core", "wavelength_colors.json")[0])
 
     @classmethod
     def stimulus_display_colors(cls) -> Mapping[str, str]:
-        """ """
+        """
+        Returns a mapping from stimulus names to preferred colors.
+        See :meth:`stimulus_display_color`.
+
+        Returns:
+            A mapping from stimulus names to 6-digit RGB hex codes prefixed by ``#``
+        """
         return copy(_stimulus_display_colors)
 
     @classmethod
     def stimulus_display_color(cls, stim: Union[int, str, Stimuli]) -> str:
         """
-
-
-        Args:
-            stim:
+        Gets the preferred color to display a stimulus with.
 
         Returns:
-
+            A 6-digit RGB hex prefixed by ``#``
         """
         stim_name = stim if isinstance(stim, str) else Stimuli.fetch(stim).name
         return copy(_stimulus_display_colors[stim_name])
@@ -166,11 +173,9 @@ class ValarTools:
 
 
         Args:
-            df: pd.DataFrame:
-            column: str:
-            more_controls: Optional[Set[str]]:  (Default value = None)
-
-        Returns:
+            df:
+            column:
+            more_controls:
 
         """
         first = ValarTools.controls_first(df[column], more_controls=more_controls)
@@ -181,14 +186,13 @@ class ValarTools:
         cls, df: pd.DataFrame, column: Union[str, int, pd.Series], first: Sequence[str]
     ) -> pd.DataFrame:
         """
-
+        Partially sorts the rows of a DataFrame by column ``column``, such that the items in ``first`` appear first.
+        The rest of the rows keep the same sorting.
 
         Args:
             df:
             column:
             first:
-
-        Returns:
 
         """
         if isinstance(column, str) or isinstance(column, int):
@@ -236,13 +240,13 @@ class ValarTools:
     @classmethod
     def stimulus_type(cls, stimulus: Union[str, int, Stimuli]) -> StimulusType:
         """
-
+        Gets the type of stimulus from a stimulus row.
 
         Args:
-            stimulus:
+            stimulus: Stimulus ID, name, or instance
 
         Returns:
-
+            A :class:`StimulusType` enum value
         """
         stimulus = Stimuli.fetch(stimulus)
         if stimulus.audio_file_id is not None:
@@ -276,35 +280,12 @@ class ValarTools:
         return NestedDotDict(t.toml_text)
 
     @classmethod
-    def log_file(cls, run: RunLike) -> str:
-        """
-        Gets the SauronX log file for a run. Is guaranteed to exist for SauronX data, but won't for legacy.
-
-        Args:
-            run: A run ID, name, tag, instance, or submission instance or hash
-
-        Returns:
-            The text of the log file, with proper (unescaped) newlines and tabs
-
-        """
-        run = ValarTools.run(run)
-        if run.submission is None:
-            raise SauronxOnlyError(f"No log files are stored for legacy data (run r{run.id})")
-        f = LogFiles.select().where(LogFiles.run == run).first()
-        if f is None:
-            raise ValarLookupError(f"No log file for SauronX run r{run.id}")
-        return f.text
-
-    @classmethod
     def treatment_sec(cls, run: RunLike) -> float:
         """
-        Returns np.inf is something is missing.
-
-        Args:
-            run: RunLike:
+        Total time between dosing and the start of the run.
 
         Returns:
-
+            The duration in seconds as a float, or ``np.inf`` if something is missing
         """
         run = cls.run(run)
         if run.datetime_dosed is None or run.datetime_run is None:
@@ -314,13 +295,11 @@ class ValarTools:
     @classmethod
     def acclimation_sec(cls, run: RunLike) -> float:
         """
-        Returns np.inf is something is missing.
-
-        Args:
-            run: RunLike:
+        Total acclimation time, the duration between the start of the run and the start of the acquisition.
+        (This duration is set on the submission and handled directly by SauronX.)
 
         Returns:
-
+            The duration in seconds as a float, or ``np.inf`` if something is missing
         """
         # here just for consistency
         run = Tools.run(run)
@@ -335,13 +314,8 @@ class ValarTools:
             - If dose time < plate time: wait_sec is negative
             - If not dosed: wait_sec = run time - plate time
 
-        Returns np.inf is something is missing.
-
-        Args:
-            run: RunLike:
-
         Returns:
-
+            the duration in seconds as a float, or ``np.inf`` if something is missing
         """
         run = Tools.run(run)
         plate = Plates.fetch(run.plate)  # type: Plates
@@ -355,13 +329,13 @@ class ValarTools:
     @classmethod
     def download_file(cls, remote_path: PathLike, local_path: str, overwrite: bool = False) -> None:
         """
-
+        Downloads a directory from a remote path.
+        Tries, in order: shutil, rsync, scp.
 
         Args:
-            remote_path: PathLike:
-            local_path: str:
+            remote_path:
+            local_path:
             overwrite:
-
         """
         remote_path = str(remote_path)
         try:
@@ -374,11 +348,12 @@ class ValarTools:
     @classmethod
     def download_dir(cls, remote_path: PathLike, local_path: str, overwrite: bool = False) -> None:
         """
-
+        Downloads a directory from a remote path.
+        Tries, in order: shutil, rsync, scp.
 
         Args:
-            remote_path: PathLike:
-            local_path: str:
+            remote_path:
+            local_path:
             overwrite:
 
         """
@@ -393,7 +368,7 @@ class ValarTools:
     @classmethod
     def _download(cls, remote_path: str, path: PathLike, is_dir: bool, overwrite: bool) -> None:
         """
-
+        Downloads via shutil or rsync, falling back to scp if rsync fails.
 
         Args:
             remote_path: str:
@@ -442,6 +417,7 @@ class ValarTools:
         See ``known_solvent_names`` instead.
 
         Args:
+            before: Ignore all solvents after this datetime
 
         Returns:
             A mapping from compound IDs to names
@@ -474,15 +450,12 @@ class ValarTools:
         Note that this map is manually defined and is not guaranteed to reflect newly-used solvents.
         Currently covers DMSO, water, ethanol, methanol, M-Propyl, DMA, and plutonium (used for testing).
 
-        Args:
-
         Returns:
             A mapping from compound IDs to names
 
         """
-        return {
-            int(k): v for k, v in InternalTools.load_resource("core", "solvents.json")[0].items()
-        }
+        data = InternalTools.load_resource("core", "solvents.json")
+        return {int(k): v for k, v in data.items()}
 
     @classmethod
     def controls_matching_all(
@@ -532,15 +505,15 @@ class ValarTools:
         Returns:
 
         """
-        if not Tools.is_true_iterable(names):
-            names = [names]
-        InternalTools.verify_class_has_attrs(ControlTypes, attributes)
-        if names is None:
+        if names is None and len(attributes) == 0:
             by_name = list(ControlTypes.select())
+        elif names is None:
+            by_name = []
         elif Tools.is_true_iterable(names):
             by_name = ControlTypes.fetch_all(names)
         else:
             by_name = [ControlTypes.fetch(names)]
+        InternalTools.verify_class_has_attrs(ControlTypes, attributes)
         by_other = {
             c
             for c in ControlTypes.select()

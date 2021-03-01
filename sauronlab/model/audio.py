@@ -1,6 +1,8 @@
 from __future__ import annotations
 from dataclasses import dataclass
 
+import pydub
+
 from sauronlab.core.core_imports import *
 
 

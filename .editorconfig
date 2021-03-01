@@ -13,7 +13,7 @@ indent_style = space
 [*.{yml,yaml,json,scala,coffee,css,js,sh,sql,tex,xml,html,htm,hs,ml,pp,R,rb}]
 indent_size = 2
 
-[*.md]
+[*{.md,.txt}]
 indent_size = 2
 trim_trailing_whitespace = false
 

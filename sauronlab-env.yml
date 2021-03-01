@@ -1,0 +1,12 @@
+name: sauronlab
+channels:
+  - conda-forge
+dependencies:
+  - python>=3.9,<4.0
+  - tables>=3.6,<4.0
+  - pip:
+      - poetry>=1.1,<2.0
+      - tox>=2.22,<3.0
+      - git+https://github.com/dmyersturnbull/sauronlab.git/main
+      - git+https://github.com/dmyersturnbull/mandos.git/main
+      - git+https://github.com/dmyersturnbull/chemserve.git/main

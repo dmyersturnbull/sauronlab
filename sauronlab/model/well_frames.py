@@ -468,7 +468,7 @@ class AbsWellFrame(TypedDf):
         Returns:
 
         """
-        compounds = set(InternalTools.fetch_all_ids(Compounds, compounds))
+        compounds = set([x.id for x in Compounds.fetch_all(compounds)])
         return self.__class__.retype(self[self["c_ids"].map(lambda cids: set(cids) == compounds)])
 
     def with_compounds_any_only(
@@ -483,7 +483,7 @@ class AbsWellFrame(TypedDf):
         Returns:
 
         """
-        compounds = set(InternalTools.fetch_all_ids(Compounds, compounds))
+        compounds = {x.id for x in Compounds.fetch_all(compounds)}
         z = self.__class__.retype(
             self[self["c_ids"].map(lambda cids: any([c in cids for c in compounds]))]
         )
@@ -518,7 +518,7 @@ class AbsWellFrame(TypedDf):
         Returns:
 
         """
-        batches = set(InternalTools.fetch_all_ids(Batches, batches))
+        batches = {x.id for x in Batches.fetch_all(batches)}
         z = self.__class__.retype(
             self[self["b_ids"].map(lambda bids: any([c in bids for c in batches]))]
         )
@@ -538,7 +538,7 @@ class AbsWellFrame(TypedDf):
         Returns:
 
         """
-        compounds = tuple(InternalTools.fetch_all_ids(Compounds, compounds))
+        compounds = tuple([x.id for x in Compounds.fetch_all(compounds)])
         return self.__class__.retype(
             self[self["c_ids"].map(lambda cids: all([c in cids for c in compounds]))]
         )
@@ -555,7 +555,7 @@ class AbsWellFrame(TypedDf):
         Returns:
 
         """
-        batches = tuple(InternalTools.fetch_all_ids(Batches, batches))
+        batches = tuple([x.id for x in Batches.fetch_all(batches)])
         return self.__class__.retype(
             self[self["b_ids"].map(lambda bids: all([b in bids for b in batches]))]
         )
@@ -572,7 +572,7 @@ class AbsWellFrame(TypedDf):
         Returns:
 
         """
-        compounds = InternalTools.fetch_all_ids(Compounds, compounds)
+        compounds = [x.id for x in Compounds.fetch_all(compounds)]
         return self.__class__.retype(
             self[self["c_ids"].map(lambda cids: any([c in cids for c in compounds]))]
         )
@@ -589,7 +589,7 @@ class AbsWellFrame(TypedDf):
         Returns:
 
         """
-        batches = InternalTools.fetch_all_ids(Batches, batches)
+        batches = [x.id for x in Batches.fetch_all(batches)]
         return self.__class__.retype(
             self[self["b_ids"].map(lambda bids: any([b in bids for b in batches]))]
         )
@@ -606,7 +606,7 @@ class AbsWellFrame(TypedDf):
         Returns:
 
         """
-        compounds = InternalTools.fetch_all_ids(Compounds, compounds)
+        compounds = [x.id for x in Compounds.fetch_all(compounds)]
         return self.__class__.retype(
             self[self["c_ids"].map(lambda cids: all([c not in cids for c in compounds]))]
         )
@@ -623,7 +623,7 @@ class AbsWellFrame(TypedDf):
         Returns:
 
         """
-        batches = InternalTools.fetch_all_ids(Batches, batches)
+        batches = [x.id for x in Batches.fetch_all(batches)]
         return self.__class__.retype(
             self[self["b_ids"].map(lambda bids: all([b not in bids for b in batches]))]
         )
@@ -640,7 +640,7 @@ class AbsWellFrame(TypedDf):
         Returns:
 
         """
-        compounds = tuple(InternalTools.fetch_all_ids(Compounds, compounds))
+        compounds = tuple([x.id for x in Compounds.fetch_all(compounds)])
         return self.__class__.retype(
             self[self["c_ids"].map(lambda cids: any([c not in cids for c in compounds]))]
         )

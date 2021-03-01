@@ -20,7 +20,7 @@ from typing import Generator, Mapping, Union
 from pocketutils.logging.fancy_logger import *
 from pocketutils.logging.log_format import *
 
-from sauronlab import __version__ as sauronlab_version
+from sauronlab import version as sauronlab_version
 
 warnings.filterwarnings(
     action="ignore",
@@ -73,7 +73,7 @@ class SauronlabResources:
 
 LogLevel.initalize()
 logger = AdvancedLogger.create("sauronlab")
-log_factory = PrettyRecordFactory(7, 13, 5).modifying(logger)
+log_factory = PrettyRecordFactory(10, 12, 5, width=100, symbols=True).modifying(logger)
 logger.setLevel("INFO")  # good start; can be changed
 
 sauronlab_start_time = datetime.now()

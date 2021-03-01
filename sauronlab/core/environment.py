@@ -1,22 +1,81 @@
+from __future__ import annotations
+
 from pocketutils.tools.filesys_tools import FilesysTools
 
 from sauronlab.core import log_factory
 from sauronlab.core._imports import *
 from sauronlab.core.valar_singleton import *
 
+from valarpy.connection import Valar
+
 # I really don't understand why this is needed here
 for handler in logging.getLogger().handlers:
     handler.setFormatter(log_factory.formatter)
 
-MAIN_DIR = Path.home() / ".sauronlab"
+MAIN_DIR = os.environ.get("SAURONLAB_DIR", Path.home() / ".sauronlab")
 CONFIG_PATH = os.environ.get("SAURONLAB_CONFIG", MAIN_DIR / "sauronlab.config")
 if CONFIG_PATH is None:
     raise FileDoesNotExistError(f"No config file at {CONFIG_PATH}")
-VIZ_PATH = (
-    MAIN_DIR / "sauronlab_viz.properties"
-    if (MAIN_DIR / "sauronlab_viz.properties").exists()
-    else SauronlabResources.path("styles", "default.properties")
-)
+MAIN_DIR.mkdir(parents=True, exist_ok=True)
+
+
+class PropSet:
+    def __init__(self, props: Mapping[str, str]):
+        self._props = props
+
+    @classmethod
+    def read(cls, config_file: Path) -> PropSet:
+        """ """
+        try:
+            return PropSet(
+                {
+                    k: v.strip("\t '\"")
+                    for k, v in FilesysTools.read_properties_file(config_file).items()
+                }
+            )
+        except ParsingError as e:
+            raise MissingConfigKeyError(f"Bad sauronlab config file {config_file}") from e
+
+    def resource(self, *names: str) -> Path:
+        return SauronlabResources.path(*names)
+
+    def str(self, key: str, fallback: Optional[str] = None) -> str:
+        value = self._props.get(key, fallback)
+        if value is None:
+            raise MissingConfigKeyError(f"Must specify ${key} in config file")
+        return value
+
+    def str_nullable(self, key: str, fallback: Optional[str] = None) -> Optional[str]:
+        return self._props.get(key, fallback)
+
+    def int(self, key: str, fallback: Optional[int] = None) -> int:
+        return int(self.str(key, str(fallback)))
+
+    def int_nullable(self, key: str, fallback: Optional[str] = None) -> Optional[int]:
+        return int(self.str_nullable(key, fallback))
+
+    def bool(self, key: str, fallback: bool) -> bool:
+        return CommonTools.parse_bool(self._props.get(key, fallback))
+
+    def dir(self, key: str, fallback: Path) -> Path:
+        if key in self._props:
+            path = Path(self._props.get(key)).expanduser()
+        else:
+            path = fallback
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+
+    def file(self, key: str, fallback: Path) -> Path:
+        if key in self._props:
+            path = Path(self._props.get(key)).expanduser()
+        else:
+            path = fallback
+        if not path.is_file():
+            raise MissingResourceError(f"No viz file at path {path}")
+        return path
+
+    def __len__(self) -> int:
+        return len(self._props)
 
 
 @abcd.auto_repr_str()
@@ -50,57 +109,39 @@ class SauronlabEnvironment:
         self.config_file = Path(CONFIG_PATH).expanduser()
         if not self.config_file.exists():
             raise MissingResourceError(f"No config file at path {self.config_file}")
-        props = self._get_props()
-
-        def _try(key: str, fallback=None):
-            return props.get(key, fallback)
-
-        self.home = Path(__file__).parent.parent
-        self.username = _try("username")
-        if self.username is None:
-            raise MissingConfigKeyError(f"Must specify username in {self.config_file}")
-        self.user = Users.fetch(self.username)
-        self.user_ref = Refs.fetch_or_none("manual:" + self.username)
+        props = PropSet.read(self.config_file)
+        # fmt: off
+        self.whereami                 = Path(__file__).parent.parent
+        self.valarpy_path             = Valar.find_extant_path(os.environ.get("VALARPY_CONFIG"))
+        self.valarpy_data             = FilesysTools.load_json(self.valarpy_path)
+        self.tunnel_host              = props.str_nullable("tunnel_host", None)
+        self.tunnel_port              = props.str_nullable("tunnel_port", None)
+        self.username                 = props.str("username")
+        self.sauronlab_log_level      = props.str("sauronlab_log_level", "MINOR")
+        self.global_log_level         = props.str("global_log_level", "INFO")
+        self.cache_dir                = props.dir("cache", MAIN_DIR / "cache")
+        self.video_cache_dir          = props.dir("video_cache", Path(self.cache_dir, "videos"))
+        self.shire_path               = props.str_nullable("shire_path", None)
+        self.use_multicore_tsne       = props.bool("multicore_tsne", False)
+        self.joblib_compression_level = props.int("joblib_compression_level", 3)
+        self.n_cores                  = props.int("n_cores", 1)
+        self.jupyter_template         = props.file("jupyter_template", props.resource("jupyter_template.txt"))
+        self.matplotlib_style         = props.file("matplotlib_style", props.resource("styles", "default.mplstyle"))
+        self.viz_file                 = props.file("viz_file", props.resource("styles", "default.mplstyle"))
+        self.user                     = Users.fetch(self.username)
+        self.user_ref                 = Refs.fetch_or_none("manual:" + self.username)
+        # fmt: on
+        # verification
         if self.user_ref is None:
             logger.warning(f"manual:{self.username} is not in `refs`. Using 'manual'.")
-        self.user_ref = Refs.fetch_or_none("manual")
-        self.sauronlab_log_level = _try("sauronlab_log_level", "MINOR")
-        self.global_log_level = _try("global_log_level", "INFO")
-        self.cache_dir = _try("cache", Path.home() / "valar-cache")
-        self.video_cache_dir = Path(
-            _try("video_cache", Path(self.cache_dir, "videos")).expanduser()
-        )
-        self.shire_path = _try("shire_path", "valinor:/shire/")
-        self.audio_waveform = CommonTools.parse_bool(_try("save_with_audio_waveform", False))
-        self.matplotlib_style = Path(
-            _try("matplotlib_style", SauronlabResources.path("styles", "default.mplstyle"))
-        ).expanduser()
-        self.use_multicore_tsne = CommonTools.parse_bool(_try("multicore_tsne", False))
-        self.joblib_compression_level = int(_try("joblib_compression_level", 3))
-        self.n_cores = int(_try("n_cores", 1))
-        self.jupyter_template = Path(
-            _try("jupyter_template", SauronlabResources.path("jupyter_template.txt"))
-        ).expanduser()
-        self.viz_file = Path(_try("viz_file", VIZ_PATH)).expanduser()
-        if not self.viz_file.exists():
-            raise MissingResourceError(f"No viz file at path {self.viz_file}")
+        else:
+            self.user_ref = Refs.fetch_or_none("manual")
+        # adjust logging, initialization, etc.
         self._adjust_logging()
         logger.info(f"Read {self.config_file} .")
-        self.cache_dir.mkdir(exist_ok=True, parents=True)
         logger.info(
             f"Set {len(props)} sauronlab config items. Run 'print(sauronlab_env.info())' for details."
         )
-
-    def _get_props(self):
-        """ """
-        try:
-            props = {
-                k: v.strip("\t '\"")
-                for k, v in FilesysTools.read_properties_file(self.config_file).items()
-            }
-        except ParsingError as e:
-            raise MissingConfigKeyError(f"Bad sauronlab config file {self.config_file}") from e
-        return props
 
     def _adjust_logging(self):
         """ """

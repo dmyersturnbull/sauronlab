@@ -1,9 +1,0 @@
-%matplotlib widget
-from sauronlab.jupyter import *
-today = datetime${{datetime}}
-quick = Quicks.pointgrey(as_of=today)
-
-J.md('''
-## <Name me!>
-**Author: ${{author}}** (${{datestr}}, Sauronlab version ${{version}})
-''')

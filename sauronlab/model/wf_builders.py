@@ -190,7 +190,7 @@ class WellFrameBuilder(AbstractWellFrameBuilder):
         Returns:
 
         """
-        well_ids = Tools.wells(wells)
+        well_ids = [well.id for well in Wells.fetch_all(wells)]
         wfb = cls(None).where(Wells.id << well_ids)
         wfb._required_wells = wells
         return wfb

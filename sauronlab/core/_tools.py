@@ -12,35 +12,33 @@ class InternalTools:
     """
     A collection of utility functions for internal use in Sauronlab.
     Equivalents of some of these functions are in the external-use Tools class, which delegates to this class.
-    The most useful functions are:
-        - Tools.run: Gets a run from a run ID, tag, name, instance, or submission hash or instance
-        - Tools.runs: Delegates to Tools.run for either of the types accepted by Tools.run, or an iterable over them
-
     """
 
-    def _load_h5(self, path: Path) -> np.array:
+    def load_h5(self, path: Path) -> np.array:
+        """Loads an HDF5 file with ``data`` as the dataset name."""
         with h5py.File(str(path)) as f:
             return f["data"]
 
-    def _save_h5(self, data: np.array, path: Path) -> None:
+    def save_h5(self, data: np.array, path: Path) -> None:
+        """Saves an HDF5 file in a safe way, using ``data`` as the dataset name."""
         try:
             with h5py.File(str(path), "w") as f:
                 f.create_dataset("data", data=data)
-        except:
+        except BaseException:  # nosec
+            # under no circumstances should we let an empty file be left here
             path.unlink(missing_ok=True)
             raise
 
     @classmethod
-    def verify_class_has_attrs(cls, class_, *attributes: Union[str, Iterable[str]]) -> None:
+    def verify_class_has_attrs(
+        cls, class_: Type[T], *attributes: Union[str, Iterable[str]]
+    ) -> None:
         """
-
+        Raises an AttributeError if the class ``class_`` is missing any of the arguments.
 
         Args:
-            class_:
-            *attributes:
-
-        Returns:
-
+            class_: A type
+            attributes: An iterable of argument names (strs), or a single arg name
         """
         attributes = InternalTools.flatten_smart(attributes)
         bad_attributes = [not hasattr(class_, k) for k in attributes]
@@ -49,16 +47,7 @@ class InternalTools:
 
     @classmethod
     def warn_overlap(cls, a: Collection[Any], b: Collection[Any]) -> Set[Any]:
-        """
-
-
-        Args:
-            a: Collection[Any]:
-            b: Collection[Any]:
-
-        Returns:
-
-        """
+        """Warns with level ``error`` if the intersection is non-empty."""
         bad = set(a).intersection(set(b))
         if len(bad) > 0:
             logger.error(f"Values {', '.join(bad)} are present in both sets")
@@ -77,43 +66,16 @@ class InternalTools:
         Sequence[str],
         Mapping[str, str],
     ]:
-        """
-
-
-        Args:
-            *parts: Sequence[str]:
-
-        Returns:
-
-        """
+        """Loads a resource file of any known type under ``resources/``."""
         path = SauronlabResources.path(*parts)
         return Tools.read_any(path)
-
-    @classmethod
-    def fetch_all_ids(cls, thing_class: Type[BaseModel], things):
-        """
-        Fetches a single row from a table, returning the row IDs.
-        Each returned row is guaranteed to exist in the table at the time the query is executed.
-
-        Args:
-            thing_class: The table (peewee model)
-            things: A list of lookup values -- each is an ID or unique varchar/char/enum field value
-
-        Returns:
-            The ID of the row
-
-        Raises:
-            ValarLookupError: If the row was not found
-
-        """
-        things = InternalTools.listify(things)
-        return [thing_class.fetch(thing).id for thing in things]
 
     @classmethod
     def fetch_all_ids_unchecked(cls, thing_class: Type[BaseModel], things, keep_none: bool = False):
         """
         Fetches a single row from a table, returning the row IDs.
-        If just IDs are passed, just returns them -- this means that the return value is NOT GUARANTEED to be a valid row ID.
+        If just IDs are passed, just returns them.
+        This means that the return value is NOT GUARANTEED to be a valid row ID.
 
         Args:
             thing_class: The table (peewee model)
@@ -124,7 +86,7 @@ class InternalTools:
             The ID of the row
 
         Raises:
-            ValarLookupError: If the row was not found
+            ValarLookupError: If a row was not found
 
         """
         things = InternalTools.listify(things)
@@ -137,35 +99,8 @@ class InternalTools:
         ]
 
     @classmethod
-    def fetch_id_unchecked(cls, thing_class: Type[BaseModel], thing) -> int:
-        """
-        Fetches a single row from a table, returning only the ID.
-        If an ID is passed, just returns that -- this means that the return value is NOT GUARANTEED to be a valid row ID.
-
-        Args:
-            thing_class: The table (peewee model)
-            thing: The lookup value -- an ID or unique varchar/char/enum field value
-
-        Returns:
-            The ID of the row
-
-        Raises:
-            ValarLookupError: If the row was not found
-
-        """
-        return thing if isinstance(thing, int) else thing_class.fetch(thing).id
-
-    @classmethod
-    def flatten(cls, seq: Iterable[Any]) -> Sequence[Any]:
-        """
-
-
-        Args:
-            seq: Iterable[Any]:
-
-        Returns:
-
-        """
+    def flatten(cls, seq: Iterable[Iterable[T]]) -> Sequence[T]:
+        """Flattens an iterable by one level, returning the result."""
         y = []
         for z in seq:
             y.extend(z)
@@ -174,13 +109,8 @@ class InternalTools:
     @classmethod
     def flatten_smart(cls, seq: Iterable[Any]) -> Sequence[Any]:
         """
-
-
-        Args:
-            seq: Iterable[Any]:
-
-        Returns:
-
+        Flattens an iterable any number of nested levels.
+        Continues until :meth:`InternalTools.is_true_iterable` is false.
         """
         if not Tools.is_true_iterable(seq):
             return [seq]
@@ -202,9 +132,6 @@ class InternalTools:
         Args:
             sequence_or_element: A single element of any type, or an untyped Iterable of elements.
 
-        Returns:
-            A list
-
         """
         return list(InternalTools.iterify(sequence_or_element))
 
@@ -216,9 +143,6 @@ class InternalTools:
 
         Args:
             sequence_or_element: A single element of any type, or an untyped Iterable of elements.
-
-        Returns:
-            An Iterator
 
         """
         if Tools.is_true_iterable(sequence_or_element):
@@ -234,9 +158,6 @@ class InternalTools:
 
         Args:
             well: A well ID or instance
-
-        Returns:
-            A wells instance
 
         """
         well = Wells.select(Wells, Runs).join(Runs).where(Wells.id == well).first()

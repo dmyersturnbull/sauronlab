@@ -14,7 +14,7 @@ __metadata = None
 try:
     __metadata = __load(Path(__file__).absolute().parent.name)
     __status__ = "Development"
-    __copyright__ = "Copyright 2016–2020"
+    __copyright__ = "Copyright 2016–2021"
     __date__ = "2020-08-14"
     __uri__ = __metadata["home-page"]
     __title__ = __metadata["name"]
@@ -24,8 +24,10 @@ try:
     __author__ = __metadata["author"]
     __maintainer__ = __metadata["maintainer"]
     __contact__ = __metadata["maintainer"]
+    version = __version__
 except PackageNotFoundError:  # pragma: no cover
-    logger.error(f"Could not load package metadata for {pkg}. Is it installed?")
+    # logger.error(f"Could not load package metadata for {pkg}. Is it installed?")
+    version = "??"
 
 
 if __name__ == "__main__":  # pragma: no cover
@@ -33,3 +35,6 @@ if __name__ == "__main__":  # pragma: no cover
         print(f"{pkg} (v{__metadata['version']})")
     else:
         print("Unknown project info")
+
+
+__all__ = ["version"]

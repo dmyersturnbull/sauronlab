@@ -143,34 +143,33 @@ class AccuracyPlotter(KvrcPlotting):
         ################################################################################################################
         # IT'S __NOT__ A BARPLOT
         ################################################################################################################
-        if self._style is not AccuracyPlotStyle.BAR:
+        if self._style is AccuracyPlotStyle.SWARM:
             color = sauronlab_rc.acc_point_color
-            if self._style is AccuracyPlotStyle.SWARM:
-                # seaborn sets s=5 instead of lines.markersize
-                # AND it expects the sqrt
-                import seaborn as sns
+            # seaborn sets s=5 instead of lines.markersize
+            # AND it expects the sqrt
+            import seaborn as sns
 
-                ax = sns.swarmplot(
-                    x_labels,
-                    scores,
-                    color=color,
-                    s=np.sqrt(sauronlab_rc.acc_point_size),
-                    dodge=True,
-                    ax=ax,
-                    **self._extra_params,
-                )
-            elif self._style is AccuracyPlotStyle.VIOLIN:
-                import seaborn as sns
+            ax = sns.swarmplot(
+                x_labels,
+                scores,
+                color=color,
+                s=np.sqrt(sauronlab_rc.acc_point_size),
+                dodge=True,
+                ax=ax,
+                **self._extra_params,
+            )
+        elif self._style is AccuracyPlotStyle.VIOLIN:
+            import seaborn as sns
 
-                ax = sns.violinplot(
-                    x_labels,
-                    scores,
-                    color=color,
-                    inner="point",
-                    fliersize=0,
-                    ax=ax,
-                    **self._extra_params,
-                )
+            ax = sns.violinplot(
+                x_labels,
+                scores,
+                color=color,
+                inner="point",
+                fliersize=0,
+                ax=ax,
+                **self._extra_params,
+            )
         ################################################################################################################
         # IT'S A BARPLOT
         ################################################################################################################

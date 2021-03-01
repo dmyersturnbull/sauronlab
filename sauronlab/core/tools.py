@@ -9,33 +9,53 @@ from pocketutils.core.chars import *
 from pocketutils.core.hasher import FileHasher
 from pocketutils.core.iterators import *
 from pocketutils.full import Tools as _Tools
+from typeddfs import TypedDfs
 
 from sauronlab.core._imports import *
 from sauronlab.core.environment import sauronlab_env
 from sauronlab.core.valar_singleton import *
 
 
-class IncomptabileNumpyArrayDataType(XTypeError):
+class IncompatibleNumpyArrayDataType(XTypeError):
     """ """
 
-    pass
+
+QueryFrame = TypedDfs.untyped("QueryFrame", doc="A DataFrame from a peewee query.")
+
+
+I = TypeVar("I")
+V = TypeVar("V")
 
 
 class SauronlabValarTools:
     """"""
 
     @classmethod
-    def query(cls, query: peewee.BaseQuery) -> pd.DataFrame:
+    def query(cls, query: peewee.BaseQuery) -> QueryFrame:
+        """
+        Fetches on a peewee query, transforming the rows into a Pandas DataFrame.
+
+        Note:
+
+            Only the rows' own fields are included; does not include fields from joined tables.
+
+        Examples:
+
+            Getting all users::
+
+                SauronlabValarTools.query(Users.select())
+
         """
 
+        def get_data(row):
+            return pd.Series(
+                {
+                    col: (value.hex() if isinstance(value, bytes) else value)
+                    for col, value in row.get_data()
+                }
+            )
 
-        Args:
-            query: peewee.BaseQuery:
-
-        Returns:
-
-        """
-        return pd.DataFrame([pd.Series(row.get_data()) for row in query])
+        return QueryFrame([get_data(row) for row in query])
 
     @classmethod
     def jvm_sbytes_to_ubytes(cls, data: bytes) -> np.array:
@@ -56,41 +76,17 @@ class SauronlabValarTools:
 
     @classmethod
     def signed_floats_to_blob(cls, data: np.array) -> bytes:
-        """
-
-
-        Args:
-            data: np.array:
-
-        Returns:
-
-        """
+        """"""
         return SauronlabValarTools.array_to_blob(data, np.float32)
 
     @classmethod
     def blob_to_signed_floats(cls, data: bytes) -> np.array:
-        """
-
-
-        Args:
-            data: bytes:
-
-        Returns:
-
-        """
+        """"""
         return np.copy(np.frombuffer(data, dtype=">f4"))
 
     @classmethod
     def blob_to_signed_ints(cls, data: bytes) -> np.array:
-        """
-
-
-        Args:
-            data: bytes:
-
-        Returns:
-
-        """
+        """"""
         return np.copy(np.frombuffer(data, dtype=">i4"))
 
     @classmethod
@@ -106,35 +102,15 @@ class SauronlabValarTools:
             The bytes representation
 
         Raises:
-            IncomptabileNumpyArrayDataType: If the numpy array has the wrong data type
+            IncompatibleNumpyArrayDataType: If the numpy array has the wrong data type
             TypeError: If `data` is not a Numpy array at all
 
         """
         if data.dtype != dtype:
-            raise IncomptabileNumpyArrayDataType(f"Type {data.dtype} is not a {dtype}")
+            raise IncompatibleNumpyArrayDataType(f"Type {data.dtype} is not a {dtype}")
         return struct.pack(
             ">" + "f" * len(data), *data
         )  # For now, we are assuming data is 1D np.array. Change this once it's not.
-
-    @classmethod
-    def wells(cls, wells: Union[int, Wells, Iterable[int, Wells]]) -> Sequence[Wells]:
-        """
-
-
-        Args:
-            wells:
-
-        Returns:
-
-        """
-        if Tools.is_true_iterable(wells):
-            return Wells.fetch_all(wells)
-        elif isinstance(wells, str) or isinstance(wells, int) or isinstance(wells, Wells):
-            return [Wells.fetch(wells)]
-        else:
-            raise XTypeError(
-                f"{type(wells)} is not a valid parameter type. Use a well or an iterable of wells."
-            )
 
     @classmethod
     def runs(cls, runs: RunsLike) -> Sequence[Runs]:
@@ -211,13 +187,8 @@ class SauronlabValarTools:
     @classmethod
     def run_ids_unchecked(cls, runs: RunsLike) -> Sequence[int]:
         """
-
-
-        Args:
-            runs: RunsLike:
-
-        Returns:
-
+        Fetches runs and gets their IDs, but leaves any int as-is without querying.
+        This function is therefore a tiny bit dangerous.
         """
         if not Tools.is_true_iterable(runs):
             runs = [runs]
@@ -285,29 +256,19 @@ class SauronlabValarTools:
     @classmethod
     def wb1_from_run(cls, run: RunLike) -> WB1:
         """
-
+        Creates a 1-based multiwell plate corresponding to the given run.
 
         Args:
-            run: RunLike:
+            run: A run ID, instance, name, tag, etc.
 
         Returns:
-
-        """
+            A :class:`pocketutils.biochem.multiwell_plates.WB1`"""
         pt: PlateTypes = Tools.run(run, join=True).plate.plate_type
         return WB1(pt.n_rows, pt.n_columns)
 
     @classmethod
     def looks_like_submission_hash(cls, submission_hash: str) -> bool:
-        """
-
-
-        Args:
-            submission_hash: Any string
-
-        Returns:
-            Whether the string could be a submission hash (is formatted correctly)
-
-        """
+        """Returns whether the string could be a submission hash – is formatted correctly."""
         return (
             submission_hash == "_" * 12
             or re.compile("[0-9a-f]{12}$").match(submission_hash) is not None
@@ -319,10 +280,14 @@ class Tools(_Tools, SauronlabValarTools):
 
     @classmethod
     def parallel(
-        cls, things, function, n_jobs: Optional[int] = sauronlab_env.n_cores, verbosity: int = 1
-    ):
+        cls,
+        things: Iterable[I],
+        function: Callable[[I], V],
+        n_jobs: Optional[int] = sauronlab_env.n_cores,
+        verbosity: int = 1,
+    ) -> V:
         """
-
+        Trivially calls the function in a :class:`joblib.Parallel` with :func:`joblib.delayed`.
 
         Args:
             things:
@@ -331,41 +296,49 @@ class Tools(_Tools, SauronlabValarTools):
             verbosity:
 
         Returns:
-
+            The result returned from ``function``
         """
         return joblib.Parallel(n_jobs=n_jobs, verbose=verbosity)(
             joblib.delayed(function)(i) for i in things
         )
 
     @classmethod
-    def prepped_file(cls, path: PathLike) -> Path:
+    def prepped_file(cls, path: PathLike, exist_ok: bool = True) -> Path:
         """
-
+        Returns a concrete :class:`pathlib.Path` for a file that can be written to without issue.
+        Uses :meth:`pocketutils.tools.path_tools.PathTools.prep_file` to address permissions and
+        directory creation. The directory will not be created on failure.
 
         Args:
-            path: PathLike:
+            path: A string, :class:`pathlib.PurePath`, or :class:`os.PathLike`
+            exist_ok: If ``False``, raises an error if the file already exists
+
+        Raises:
+            IOError: Specific subclasses under :class:`pocketutils.core.exceptions.PathError`, which in turn
+                     subclasses :class:`IOError`; for example, from a permissions issue or because the path
+                     exists but is not a file
 
         Returns:
-
+            A concrete os-specific :class:`pathlib.Path`
         """
-        cls.prep_file(path)
+        cls.prep_file(path, exist_ok=exist_ok)
         return Path(path)
 
     @classmethod
     def prepped_dir(cls, path: PathLike, exist_ok: bool = True) -> Path:
         """
-
+        Creates a directory and returns a concrete :class:`pathlib.Path`.
+        Uses :meth:`pocketutils.tools.path_tools.PathTools.prep_file` to avoid any issues.
 
         Args:
-            path: PathLike:
-            exist_ok: bool:  (Default value = True)
+            path: A string, :class:`pathlib.PurePath`, or :class:`os.PathLike`
+            exist_ok: If ``False``, raises an error if the file already exists;
+                      passed directly into :meth:`pathlib.Path.mkdir`
 
         Returns:
-
+            A concrete os-specific :class:`pathlib.Path`
         """
-        if path is None:
-            raise ValueError("Path is None!")
-        cls.prep_dir(path, exist_ok=True)
+        cls.prep_dir(path, exist_ok=exist_ok)
         return Path(path)
 
 

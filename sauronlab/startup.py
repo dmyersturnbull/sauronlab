@@ -21,11 +21,16 @@ __filterer = (
 ################################
 import logging
 
-from sauronlab.core import log_factory, logger
+from sauronlab import version
+from sauronlab.core import logger
+
+if version == "??":
+    logger.warning(f"Could not load sauronlab package info. Is it installed?")
+
 from sauronlab.core.environment import sauronlab_env
 
-logging.getLogger("chemspipy").setLevel(logging.WARNING)
-logging.getLogger("url_query").setLevel(logging.WARNING)
+# logging.getLogger("chemspipy").setLevel(logging.WARNING)
+# logging.getLogger("url_query").setLevel(logging.WARNING)
 
 import traceback
 from collections import OrderedDict, namedtuple
@@ -154,5 +159,5 @@ logger.notice(
     f"Sauronlab version {sauronlab_version.strip()}. Started in {round(time.monotonic() - sauronlab_start_clock)}s."
 )
 logger.debug(f"Figure dimensions: {sauronlab_rc.height}×{sauronlab_rc.width}")
-logger.info("Severity key: " + Severity.key_str())
+logger.debug("Severity key: " + Severity.key_str())
 logger.debug(f"Using backend  {matplotlib.get_backend()}")

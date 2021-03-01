@@ -1,6 +1,10 @@
 from sauronlab.core.core_imports import *
 
 
+def identity(s: str) -> str:
+    return s
+
+
 @abcd.auto_repr_str()
 @abcd.auto_eq()
 class CompoundNamer(metaclass=abc.ABCMeta):
@@ -85,27 +89,9 @@ class CompoundNamer(metaclass=abc.ABCMeta):
 
     @abcd.abstractmethod
     def fetch(self, compound_ids: NullableCompoundsLike) -> Mapping[int, str]:
-        """
-
-
-        Args:
-            compound_ids: NullableCompoundsLike:
-
-        Returns:
-
-        """
         raise NotImplementedError()
 
     def _flatten_to_id_set(self, compounds):
-        """
-
-
-        Args:
-            compounds:
-
-        Returns:
-
-        """
         cs = InternalTools.flatten_smart(compounds)
         return set(InternalTools.fetch_all_ids_unchecked(Compounds, cs, keep_none=True))
 
@@ -132,15 +118,6 @@ class BatchNamer(metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     def _flatten_to_id_set(self, batches):
-        """
-
-
-        Args:
-            batches:
-
-        Returns:
-
-        """
         if isinstance(batches, int) or isinstance(batches, str):
             return [batches]
         all_cpids = set(InternalTools.flatten_smart(batches))
@@ -164,15 +141,6 @@ class BatchNamerWrapping(BatchNamer):
         self.use_bid_if_empty = use_bid_if_empty
 
     def fetch(self, batches: BatchesLike) -> Mapping[int, str]:
-        """
-
-
-        Args:
-            batches: BatchesLike:
-
-        Returns:
-
-        """
         all_batches = Batches.fetch_all(self._flatten_to_id_set(batches))
         batches_with_cids = [batch for batch in all_batches if batch.compound_id is not None]
         cids_to_batches = Tools.multidict(batches_with_cids, "compound_id")
@@ -189,15 +157,6 @@ class BatchNamerTag(BatchNamer):
     """"""
 
     def fetch(self, batches: BatchesLike) -> Mapping[int, str]:
-        """
-
-
-        Args:
-            batches: BatchesLike:
-
-        Returns:
-
-        """
         return {b.id: b.tag for b in Batches.fetch_all(self._flatten_to_id_set(batches))}
 
 
@@ -205,15 +164,6 @@ class CidCompoundNamer(CompoundNamer):
     """"""
 
     def fetch(self, compound_ids: CompoundsLike) -> Mapping[int, str]:
-        """
-
-
-        Args:
-          compound_ids: CompoundsLike:
-
-        Returns:
-
-        """
         return {c: c for c in self._flatten_to_id_set(compound_ids)}
 
 
@@ -225,21 +175,12 @@ class SingleThingCompoundNamer(CompoundNamer):
 
         Args:
             attribute:
-            datetime:
+            as_of:
         """
         super().__init__(as_of)
         self.attribute = attribute
 
     def fetch(self, compound_ids: CompoundsLike) -> Mapping[int, str]:
-        """
-
-
-        Args:
-            compound_ids: CompoundsLike:
-
-        Returns:
-
-        """
         all_cpids = self._flatten_to_id_set(compound_ids)
         return {
             compound.id: getattr(compound, self.attribute)
@@ -268,7 +209,7 @@ class TieredCompoundNamer(CompoundNamer):
         self,
         sources: Sequence[RefLike] = None,
         max_length: Optional[int] = None,
-        use_cid_if_empty: bool = False,
+        fallback_to_cid: bool = False,
         as_of: datetime = datetime.now(),
         allow_numeric: bool = False,
         transform: Optional[Callable[[str], str]] = None,
@@ -276,37 +217,11 @@ class TieredCompoundNamer(CompoundNamer):
         super().__init__(as_of)
         self.sources = [r.id for r in self._choose_refs(sources)]
         self.max_length = max_length
-        self.use_cid_if_empty = use_cid_if_empty
+        self.fall_back_to_cid = fallback_to_cid
         self.allow_numeric = allow_numeric
-        self.transform = lambda s: s if transform is None else transform
-
-    @classmethod
-    def _choose_refs(cls, sources: Optional[Sequence[RefLike]] = None) -> Sequence[Refs]:
-        """
-
-
-        Args:
-            sources:
-
-        Returns:
-
-        """
-        if isinstance(sources, str):
-            sources = InternalTools.load_resource("chem", Path(sources).with_suffix(".lines"))
-        if sources is not None and not Tools.is_true_iterable(sources):
-            sources = [sources]
-        return Refs.fetch_all(TieredCompoundNamer.elegant_sources if sources is None else sources)
+        self.transform = identity if transform is None else transform
 
     def fetch(self, compound_ids: CompoundsLike) -> Mapping[int, str]:
-        """
-
-
-        Args:
-            compound_ids: CompoundsLike:
-
-        Returns:
-
-        """
         all_cpids = self._flatten_to_id_set(compound_ids)
         query = (
             CompoundLabels.select(CompoundLabels)
@@ -316,7 +231,7 @@ class TieredCompoundNamer(CompoundNamer):
         if self.as_of is not None:
             query = query.where(CompoundLabels.created < self.as_of)
         query = query.order_by(CompoundLabels.ref_id.desc(), CompoundLabels.created)
-        data = {x: "c" + str(x) if self.use_cid_if_empty else None for x in all_cpids}
+        data = {x: "c" + str(x) if self.fall_back_to_cid else None for x in all_cpids}
         indices = {x: 99999 for x in all_cpids}
         for cn in query:
             ind = self.sources.index(cn.ref_id)
@@ -329,20 +244,19 @@ class TieredCompoundNamer(CompoundNamer):
                 indices[cn.compound_id] = ind
         return {k: self.transform(v) for k, v in data.items()}
 
+    @classmethod
+    def _choose_refs(cls, sources: Optional[Sequence[RefLike]] = None) -> Sequence[Refs]:
+        if isinstance(sources, str):
+            sources = InternalTools.load_resource("chem", Path(sources).with_suffix(".lines"))
+        if sources is not None and not Tools.is_true_iterable(sources):
+            sources = [sources]
+        return Refs.fetch_all(TieredCompoundNamer.elegant_sources if sources is None else sources)
+
 
 class CompoundNamerEmpty(BatchNamer):
     """"""
 
     def fetch(self, compound_ids: CompoundsLike) -> Mapping[int, str]:
-        """
-
-
-        Args:
-            compound_ids: CompoundsLike:
-
-        Returns:
-
-        """
         return {}
 
 
@@ -350,15 +264,6 @@ class BatchNamerEmpty(BatchNamer):
     """"""
 
     def fetch(self, batches: BatchesLike) -> Mapping[int, str]:
-        """
-
-
-        Args:
-            batches: BatchesLike:
-
-        Returns:
-
-        """
         return {}
 
 
@@ -370,24 +275,28 @@ class CleaningTieredCompoundNamer(TieredCompoundNamer):
         self,
         sources: Sequence[int] = None,
         max_length: Optional[int] = None,
-        use_cid_if_empty: bool = False,
+        fall_back_to_cid: bool = False,
         as_of: datetime = datetime.now(),
         allow_numeric: bool = False,
         transform: Optional[Callable[[str], str]] = None,
+        cleaner: Optional[str] = None,
     ):
-        """
+        if cleaner is None:
+            cleaner = CompoundNameCleaner()
 
-        Args:
-            sources:
-            max_length:
-            use_cid_if_empty:
-            as_of:
-            allow_numeric:
-            transform:
-        """
-        cleaner = CompoundNameCleaner()
-        transform = lambda s: cleaner.clean(transform(s))
-        super().__init__(sources, max_length, use_cid_if_empty, as_of, allow_numeric, transform)
+        def clean(s: str) -> str:
+            if transform is None:
+                return cleaner.clean(s)
+            return cleaner.clean(transform(s))
+
+        super().__init__(
+            sources=sources,
+            max_length=max_length,
+            fallback_to_cid=fall_back_to_cid,
+            as_of=as_of,
+            allow_numeric=allow_numeric,
+            transform=clean,
+        )
 
 
 class CompoundNameCleaner:
@@ -399,6 +308,11 @@ class CompoundNameCleaner:
     """
 
     def __init__(self, to_discard: Optional[Set[str]] = None):
+        """
+
+        Args:
+            to_discard:
+        """
         self.to_discard = to_discard
         if self.to_discard is None:
             self.to_discard = InternalTools.load_resource("chem", "unimportant_substrings.lines")
@@ -408,7 +322,7 @@ class CompoundNameCleaner:
 
 
         Args:
-            thestring: Optional[str]:
+            thestring:
 
         Returns:
 
@@ -417,7 +331,28 @@ class CompoundNameCleaner:
             return None
         if not isinstance(thestring, str):
             return thestring
-        thestring = Tools.fix_greek(thestring)
+        # desperate attempt at standardization
+        # although eta and iota are sometimes used, there might be some risk of getting that wrong
+        # whereas for these 5 letters, there's almost 0 risk of messing it up
+        # this might not have been worth writing
+        for eng, greek in {
+            "alpha": "α",
+            "beta": "β",
+            "gamma": "γ",
+            "delta": "δ",
+            "epsilon": "ε",
+        }.items():
+            if thestring.endswith(eng):
+                thestring = thestring[: -len(eng)]
+            if thestring.startswith(eng):
+                thestring = thestring[len(eng) :]
+            thestring = thestring.replace(" " + eng + "-", " " + greek + "-")
+            thestring = thestring.replace(" " + eng + " ", " " + greek + " ")
+            thestring = thestring.replace("-" + eng + " ", "-" + greek + " ")
+            thestring = thestring.replace("-" + eng + "-", "-" + greek + "-")
+            for digit in range(10):
+                thestring = thestring.replace(eng + str(digit), greek + str(digit))
+        # after fixing greek, discard unimportant parts
         for e in self.to_discard:
             if thestring.lower().endswith(" " + e.lower()):
                 thestring = thestring[: -len(e)].strip()
@@ -429,6 +364,7 @@ class CompoundNameCleaner:
                 thestring = thestring[: -len(e)].strip() + " (+)"
                 break
         thestring = thestring.strip()
+        # really pathetic attempt to handle acronyms
         if len(thestring) > 4:
             return thestring.lower()
         return thestring
@@ -444,28 +380,12 @@ class CompoundNamers:
 
     @classmethod
     def inchikey(cls, as_of: Optional[datetime] = None) -> CompoundNamer:
-        """
-
-
-        Args:
-            as_of:
-
-        Returns:
-
-        """
+        """"""
         return SingleThingCompoundNamer("inchikey", as_of)
 
     @classmethod
     def chembl(cls, as_of: Optional[datetime] = None) -> CompoundNamer:
-        """
-
-
-        Args:
-            as_of: Optional[datetime]:  (Default value = None)
-
-        Returns:
-
-        """
+        """"""
         return SingleThingCompoundNamer("chembl", as_of)
 
     @classmethod
@@ -475,17 +395,7 @@ class CompoundNamers:
         max_length: int = 30,
         as_of: Optional[datetime] = None,
     ) -> CompoundNamer:
-        """
-
-
-        Args:
-            sources:
-            max_length:
-            as_of:
-
-        Returns:
-
-        """
+        """"""
         return TieredCompoundNamer(sources, max_length=max_length, as_of=as_of)
 
     @classmethod
@@ -495,19 +405,9 @@ class CompoundNamers:
         max_length: int = 30,
         as_of: Optional[datetime] = None,
     ) -> CompoundNamer:
-        """
-
-
-        Args:
-            sources:
-            max_length:
-            as_of:
-
-        Returns:
-
-        """
+        """"""
         return TieredCompoundNamer(
-            sources, max_length=max_length, as_of=as_of, use_cid_if_empty=True
+            sources, max_length=max_length, as_of=as_of, fallback_to_cid=True
         )
 
     @classmethod
@@ -517,19 +417,9 @@ class CompoundNamers:
         max_length: int = 30,
         as_of: Optional[datetime] = None,
     ) -> CompoundNamer:
-        """
-
-
-        Args:
-            sources:
-            max_length:
-            as_of:
-
-        Returns:
-
-        """
+        """"""
         return CleaningTieredCompoundNamer(
-            sources, max_length=max_length, as_of=as_of, use_cid_if_empty=True
+            sources, max_length=max_length, as_of=as_of, fall_back_to_cid=True
         )
 
 
@@ -565,9 +455,7 @@ class BatchNamers:
 
         """
         return BatchNamerWrapping(
-            TieredCompoundNamer(
-                sources, max_length=max_length, as_of=as_of, use_cid_if_empty=False
-            ),
+            TieredCompoundNamer(sources, max_length=max_length, as_of=as_of, fallback_to_cid=False),
             use_bid_if_empty=True,
         )
 
@@ -591,7 +479,7 @@ class BatchNamers:
         """
         return BatchNamerWrapping(
             CleaningTieredCompoundNamer(
-                sources, max_length=max_length, as_of=as_of, use_cid_if_empty=False
+                sources, max_length=max_length, as_of=as_of, fall_back_to_cid=False
             ),
             use_bid_if_empty=True,
         )

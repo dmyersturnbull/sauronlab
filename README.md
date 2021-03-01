@@ -1,4 +1,4 @@
-# 🌲 Sauronlab
+# Sauronlab
 
 [![Version status](https://img.shields.io/pypi/status/sauronlab)](https://pypi.org/project/sauronlab)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
@@ -15,41 +15,47 @@
 [![Code Quality (Scrutinizer)](https://scrutinizer-ci.com/g/dmyersturnbull/sauronlab/badges/quality-score.png?b=main)](https://scrutinizer-ci.com/g/dmyersturnbull/sauronlab/?branch=main)  
 [![Created with Tyrannosaurus](https://img.shields.io/badge/Created_with-Tyrannosaurus-0000ff.svg)](https://github.com/dmyersturnbull/tyrannosaurus)
 
-Cheminformatics and behavioral profiling analysis via Sauron and Valar.
+🦜 Cheminformatics and behavioral profiling analysis via Sauron and Valar.
 
-**⚠ Please note:**
+**⚠ Note:**
 This is an unfinished fork of a previous repo.
-It is being heavily refactored, and most tests are missing. Do not use it.
+It is being heavily refactored, and most tests are missing.
+
+Below is a simple usage and installation guide.
+[See the docs 📚](https://sauronlab.readthedocs.io/en/stable/) for more help.
+
+### 💡 Usage
+
+If using a remote connection, you can run `sauronlab tunnel` to connect to the database over an SSH tunnel.
+
+Import with `from sauronlab.startup import *`.
+or use the IPython magic `%sauronlab` to generate from a template.
+See the [start-here example notebook](https://github.com/dmyersturnbull/sauron-publication/blob/main/DOCUMENTATION/examples/start-here.ipynb).
+
+### 🔌 Installation
+
+You will need Python 3.9+.
+Consider using Miniconda and following the setup described in
+[_new data science steps_](https://dmyersturnbull.github.io/#-new-data-science-steps-with-python).
+
+Sauronlab is best installed via pip and [poetry](https://python-poetry.org).
+The simplest way is:
+`pip install git+https://github.com/dmyersturnbull/sauronlab.git/main[perf,extras]`.
+
+Equally good is [sauronlab-env.yml](https://github.com/dmyersturnbull/sauronlab/blob/main/sauronlab-env.yml)
+via `conda env create --file=environment.yml`. This will create a new environment called _sauronlab_.
+(Note that this is different from the _sauronpub_ environment file in the sauron-publication repo.
+The latter is intended only for exact replication of the analyses used for the manuscript.)
+
+Run `sauronlab init` to finalize the installation.
+
+- If you are using a local database, ignore _tunnel-host_ and _tunnel-port_.
+- Leave `shire` as `none` unless you have access to a raw data hierarchy.
+
+Running `init` copied some files to `~/.sauronlab`.
+Take a look and edit the files if needed.
 
 ### 🔨 Building
-
-The Conda build includes a dependency on [rdkit](http://rdkit.org/) by way of [chemserve](https://github.com/dmyersturnbull/chemserve).
-The environment file (`environment.yml`) generates a Conda environment called `sauronlab` and includes optional dependencies, including jupyterlab.
-To install it, clone and run:
-
-```bash
-conda create \
-  --override-channels \
-  --channel conda-forge \
-  --force \
-  --yes \
-  --file environment.yml
-```
-
-See the example notebooks under `examples`, and [See the docs 📚](https://sauronlab.readthedocs.io/en/stable/)
-for more info.
-
-To install, first install and configure [MariaDB](https://mariadb.org/).
-Then run:
-
-```bash
-pip install sauronlab
-sauronlab init
-```
-
-The second command will prompt you and configure sauronlab with a new database
-or the database from the [OSF repository](https://osf.io/nyhpc/).
-[See the docs](https://sauronlab.readthedocs.io/en/stable/) for more help.
 
 To build and test locally (with MariaDB installed):
 
@@ -61,6 +67,24 @@ tox
 ```
 
 The `tox.ini` assumes that the root MariaDB password is `root`.
+
+#### 🔧 Additional configuration
+
+You can also overwrite any sauronlab
+[_resource_ file](https://github.com/dmyersturnbull/sauronlab/tree/main/sauronlab/resources)
+by copying it to `~/.sauronlab/...`.
+For example, you can copy
+`https://github.com/dmyersturnbull/sauronlab/blob/main/sauronlab/resources/viz/stim_colors.json` to
+`~/.sauronlab/viz/stim_colors.json` to change the default colors used to plot stimuli.
+
+#### 📝 Technical notes
+
+Sauronlab is available on both [conda-forge](https://anaconda.org/conda-forge/sauronlab)
+and [PyPi](http://pypi.org/project/sauronlab).
+We generally recommend installing via pip/Poetry.
+The reasons for this are described
+[in this post](https://dmyersturnbull.github.io/#-the-python-build-landscape).
+Briefly, conda will not detect dependency conflicts for packages that are only available on PyPi.
 
 ### 🍁 Contributing
 
