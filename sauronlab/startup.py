@@ -1,7 +1,6 @@
 """
 Sets up standard imports and settings for Sauronlab.
 """
-import os
 
 from pocketutils.logging.warning_utils import *
 
@@ -19,15 +18,12 @@ __filterer = (
 ################################
 # set up logger for Jupyter
 ################################
-import logging
 
 from sauronlab import version
 from sauronlab.core import logger
 
 if version == "??":
     logger.warning(f"Could not load sauronlab package info. Is it installed?")
-
-from sauronlab.core.environment import sauronlab_env
 
 # logging.getLogger("chemspipy").setLevel(logging.WARNING)
 # logging.getLogger("url_query").setLevel(logging.WARNING)
@@ -38,6 +34,7 @@ from collections import OrderedDict, namedtuple
 ################################
 # external imports
 ################################
+
 from decimal import Decimal
 from io import StringIO
 from tempfile import NamedTemporaryFile, TemporaryDirectory, TemporaryFile
@@ -59,18 +56,16 @@ from pocketutils.core.dot_dict import *
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC, LinearSVC
 
-from sauronlab.analysis.auto_analyses import *
-from sauronlab.analysis.mandos_searches import *
-
-# analysis
-from sauronlab.analysis.phenosearches import *
-from sauronlab.caches.audio_caches import *
-from sauronlab.caches.caching_wfs import *
+################################
+# internal imports
+################################
 
 # caches
 from sauronlab.caches.sensor_caches import *
 from sauronlab.caches.stim_caches import *
 from sauronlab.caches.wf_caches import *
+from sauronlab.caches.audio_caches import *
+from sauronlab.caches.caching_wfs import *
 
 # core
 from sauronlab.core.core_imports import *

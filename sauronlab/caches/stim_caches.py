@@ -57,7 +57,7 @@ class StimframeCache(AStimCache):
         """
         if not isinstance(battery, int):  # avoid query
             battery = Batteries.fetch(battery).id
-        return self.cache_dir / (str(battery) + ".h5")
+        return self.cache_dir / (str(battery) + ".feather")
 
     @abcd.overrides
     def key_from_path(self, path: PathLike) -> BatteryLike:
@@ -71,7 +71,7 @@ class StimframeCache(AStimCache):
 
         """
         path = Path(path).relative_to(self.cache_dir)
-        return int(re.compile(r"^([0-9]+)\.h5$").fullmatch(path.name).group(1))
+        return int(re.compile(r"^([0-9]+)\.csv\.gz").fullmatch(path.name).group(1))
 
     @abcd.overrides
     def load(self, battery: BatteryLike) -> BatteryStimFrame:
@@ -124,7 +124,7 @@ class StimframeCache(AStimCache):
         with Tools.silenced(no_stderr=True, no_stdout=True):
             try:
                 logger.debug(f"Loading cached battery battery {battery.id}")
-                df = pd.read_hdf(self.path_of(battery.id), "df")
+                df = pd.read_feather(self.path_of(battery.id))
             except Exception as e:
                 raise CacheLoadError(f"Failed to load stimframes for battery {battery.id}") from e
             return BatteryStimFrame(df)
@@ -142,7 +142,7 @@ class StimframeCache(AStimCache):
             with Tools.silenced(no_stderr=True, no_stdout=True):
                 saved_to = self.path_of(battery.id)
                 logger.info(f"Saving battery {battery.id} to {saved_to}")
-                BatteryStimFrame.vanilla(bsf).to_hdf(str(saved_to), "df")
+                BatteryStimFrame.vanilla(bsf).to_feather(str(saved_to))
         except Exception as e:
             raise XValueError(f"Failed to save stimframes for battery {battery.id}") from e
 

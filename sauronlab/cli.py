@@ -67,8 +67,8 @@ class Installer:
             config_file.write_text(data)
             self.n_created += 1
         self._copy_if(
-            MAIN_DIR / "jupyter_template.txt",
-            SauronlabResources.path("templates", "jupyter_template.txt"),
+            MAIN_DIR / "jupyter.txt",
+            SauronlabResources.path("templates", "jupyter.txt"),
         )
         self._copy_if(
             MAIN_DIR / "sauronlab.mplstyle",

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pandas.core.groupby import GroupBy
-from typeddfs.base_dfs import InvalidDfError, MissingColumnError
 
 from sauronlab.core.core_imports import *
 from sauronlab.model.compound_names import *

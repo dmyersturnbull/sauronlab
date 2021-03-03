@@ -106,7 +106,7 @@ class SauronlabSensor:
 
         """
         self._sensor_data = sensor_data
-        self._run = ValarTools.run(run)
+        self._run = Runs.fetch(run)
 
     @property
     def run(self) -> Runs:

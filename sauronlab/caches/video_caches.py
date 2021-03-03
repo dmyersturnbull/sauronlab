@@ -1,7 +1,7 @@
 from sauronlab.core.core_imports import *
-from sauronlab.core.video_core import VideoCore
+from sauronlab.extras.video_core import VideoCore
 from sauronlab.model.cache_interfaces import AVideoCache
-from sauronlab.model.videos import *
+from sauronlab.extras.videos import *
 
 DEFAULT_SHIRE_STORE = PurePath(sauronlab_env.shire_path) / "store"
 

@@ -6,28 +6,10 @@ from .treatments import Treatment, Treatments
 
 
 def _w(attrs: str):
-    """
-
-
-    Args:
-        attrs: str:
-
-    Returns:
-
-    """
     return lambda w, ts: Tools.look(w, attrs)
 
 
 def _r(attrs: str):
-    """
-
-
-    Args:
-        attrs: str:
-
-    Returns:
-
-    """
     return lambda w, ts: Tools.look(w, "run." + attrs)
 
 

@@ -1,5 +1,4 @@
 from __future__ import annotations
-from dataclasses import dataclass
 
 from sauronlab.core.core_imports import *
 from sauronlab.model.treatment_names import *

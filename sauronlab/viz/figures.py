@@ -207,15 +207,7 @@ class FigureTools(_FigureTools):
 
         # noinspection PyProtectedMember
         def fix_u(s: str) -> str:
-            """
-
-
-            Args:
-                s: str:
-
-            Returns:
-
-            """
+            """"""
             return (
                 str(s)
                 .replace("(-)", "(−)")
@@ -228,15 +220,7 @@ class FigureTools(_FigureTools):
             )
 
         def fix_ltext(s: str) -> str:
-            """
-
-
-            Args:
-                s: str:
-
-            Returns:
-
-            """
+            """"""
             # escape: # $ % & ~ _ ^ \ { } \( \) \[ \]
             return (
                 Tools.strip_paired(s, [("$", "$")])
@@ -251,15 +235,7 @@ class FigureTools(_FigureTools):
             )
 
         def fix_lmath(s: str) -> str:
-            """
-
-
-            Args:
-                s: str:
-
-            Returns:
-
-            """
+            """"""
             return (
                 ("$" + Tools.strip_paired(s, [("$", "$")]) + "$")
                 .replace("killed (+)", "lethal (+)")
@@ -275,15 +251,7 @@ class FigureTools(_FigureTools):
             )
 
         def choose_fix(s: str) -> str:
-            """
-
-
-            Args:
-                s: str:
-
-            Returns:
-
-            """
+            """"""
             if not plt.rcParams["text.usetex"]:
                 return fix_u(s)
             elif (
@@ -304,15 +272,7 @@ class FigureTools(_FigureTools):
                 return s
 
         def fix(s0: str) -> str:
-            """
-
-
-            Args:
-                s0: str:
-
-            Returns:
-
-            """
+            """"""
             is_label = hasattr(s0, "get_text")
             if is_label:
                 # noinspection PyUnresolvedReferences

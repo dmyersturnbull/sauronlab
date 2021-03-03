@@ -42,7 +42,7 @@ class AssayFrameCache(AAssayCache):
         """
         if not isinstance(battery, int):  # avoid query
             battery = Batteries.fetch(battery).id
-        return self.cache_dir / (str(battery) + ".csv")
+        return self.cache_dir / (str(battery) + ".feather")
 
     @abcd.overrides
     def key_from_path(self, path: PathLike) -> BatteryLike:
@@ -71,7 +71,7 @@ class AssayFrameCache(AAssayCache):
         """
         battery = Batteries.fetch(battery)
         self.download(battery)
-        return AssayFrame.read_csv(self.path_of(battery.id))
+        return AssayFrame.read_feather(self.path_of(battery.id))
 
     @abcd.overrides
     def download(self, *batteries: BatteryLike) -> None:
@@ -88,7 +88,7 @@ class AssayFrameCache(AAssayCache):
                 logger.minor(f"Downloading AssayFrame for battery {battery.id}")
                 afs = AssayFrame.of(battery)
                 # noinspection PyTypeChecker
-                afs.to_csv(self.path_of(battery.id))
+                afs.to_feather(self.path_of(battery.id))
 
     def __repr__(self):
         return f"{type(self).__name__}('{self.cache_dir}')"

@@ -360,25 +360,7 @@ class ClassifierPath:
         Returns:
 
         """
-        return self / "weight.csv"
-
-    @property
-    def weight_h5(self) -> Path:
-        """
-
-        Returns:
-
-        """
-        return self / "weight.h5"
-
-    @property
-    def weight_h5_key(self) -> str:
-        """
-
-        Returns:
-
-        """
-        return "weight"
+        return self / "weight.csv.gz"
 
     @property
     def accuracy_csv(self) -> Path:

@@ -502,7 +502,8 @@ class SklearnWfClassifierWithOob(
         accuracy.to_csv(path.accuracy_csv)
         if isinstance(self, HasWeights):
             weights = self.weights
-            pd.Series(weights, name="weight").to_hdf(str(path.weight_h5), path.weight_h5_key)
+            series = pd.Series(weights, name="weight")
+            series.to_csv(str(path.weight_csv))
         if figures:
             with FigureTools.clearing():
                 FigureSaver().save(accuracy.swarm(), path.swarm_pdf)

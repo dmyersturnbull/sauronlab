@@ -80,7 +80,6 @@ class AssayFrame(TypedDf):
         Returns:
 
         """
-        simplifier = ValarTools.assay_name_simplifier()
         battery = Batteries.fetch(battery)
         query = (
             AssayPositions.select(AssayPositions, Assays, StimulusFrames, Stimuli, Batteries)
@@ -98,7 +97,7 @@ class AssayFrame(TypedDf):
                         "position_id": ap.id,
                         "assay_id": ap.assay.id,
                         "name": ap.assay.name,
-                        "simplified_name": simplifier(ap.assay.name),
+                        "simplified_name": ValarTools.simplify_assay_name(ap.assay.name),
                         "start_ms": ValarTools.assay_ms_per_stimframe(ap.assay) * ap.start,
                         "end_ms": ValarTools.assay_ms_per_stimframe(ap.assay)
                         * (ap.start + ap.assay.length),

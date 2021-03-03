@@ -189,7 +189,7 @@ class SensorCache(ASensorCache):
 
         """
         sensor_name, run = tup
-        run = ValarTools.run(run)
+        run = Runs.fetch(run)
         for component in sensor_name.components:
             logger.debug(f"Finding component {component} for {sensor_name}, run {run.id}")
             self._download_raw(component, run)
@@ -272,7 +272,7 @@ class SensorCache(ASensorCache):
 
         """
         assert sensor_name.is_raw, sensor_name.name
-        run = ValarTools.run(run)
+        run = Runs.fetch(run)
         generation = ValarTools.generation_of(run)
         sensor = Sensors.fetch(ValarTools.standard_sensor(sensor_name, generation))
         path = self.path_of((sensor_name, run))

@@ -40,6 +40,7 @@ class SensorNames(SmartEnum):
     PREVIEW_FRAME = enum.auto()
     STIMULUS_MILLIS = enum.auto()
     CAMERA_MILLIS = enum.auto()
+    #
     RAW_SECONDARY_CAMERA = enum.auto()
     RAW_PREVIEW_FRAME = enum.auto()
     RAW_MICROPHONE_RECORDING = enum.auto()
@@ -168,10 +169,10 @@ class SensorNames(SmartEnum):
         )
 
     @property
-    def json_name(self) -> Optional[str]:
+    def json_name(self) -> str:
         if self.is_raw:
             return self.name.lower().replace("raw_", "")
-        return None
+        raise KeyError(f"No json_name for composite sensor {self}")
 
 
 __all__ = ["SensorNames"]

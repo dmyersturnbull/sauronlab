@@ -331,16 +331,6 @@ class AccuracyDistPlotter(KvrcPlotting):
         Adds a line indicating a significance threshold at x-value `x`.
         If you have multiple labels, use line breaks (\n) in `label`.
 
-        Args:
-            ax: Axes:
-            x: float:
-            label: Optional[str]:
-            textx:
-            texty:
-            text_kwargs:  (Default value = None)
-
-        Returns:
-
         """
         ax.axvline(
             x=x,

@@ -1,5 +1,3 @@
-import h5py
-
 from sauronlab.core._imports import *
 from sauronlab.core.tools import *
 from sauronlab.core.valar_singleton import *
@@ -16,11 +14,15 @@ class InternalTools:
 
     def load_h5(self, path: Path) -> np.array:
         """Loads an HDF5 file with ``data`` as the dataset name."""
+        import h5py
+
         with h5py.File(str(path)) as f:
             return f["data"]
 
     def save_h5(self, data: np.array, path: Path) -> None:
         """Saves an HDF5 file in a safe way, using ``data`` as the dataset name."""
+        import h5py
+
         try:
             with h5py.File(str(path), "w") as f:
                 f.create_dataset("data", data=data)

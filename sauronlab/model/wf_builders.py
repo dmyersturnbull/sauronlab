@@ -509,10 +509,10 @@ class WellFrameBuilder(AbstractWellFrameBuilder):
     def _calc(self, f: WellFeatures):
         if self._sensor_cache is not None and self._feature.is_interpolated:
             frame_timestamps = self._get_timestamps(
-                f.well.run, SensorNames.CAMERA_MILLIS, self._frame_timestamp_map
+                f.well.run, SensorNames.RAW_CAMERA_MILLIS, self._frame_timestamp_map
             )
             stim_timestamps = self._get_timestamps(
-                f.well.run, SensorNames.STIMULUS_MILLIS, self._stim_timestamp_map
+                f.well.run, SensorNames.RAW_STIMULUS_MILLIS, self._stim_timestamp_map
             )
         else:
             frame_timestamps = None
@@ -522,10 +522,11 @@ class WellFrameBuilder(AbstractWellFrameBuilder):
     def _get_timestamps(
         self, run: Runs, name: SensorNames, mapping: Dict[Runs, np.array]
     ) -> Optional[np.array]:
+        generation = ValarTools.generation_of(run)
         if run in mapping:
             return mapping[run]
         else:
-            sensor = ValarTools.standard_sensor(name, ValarTools.generation_of(run))
+            sensor = ValarTools.standard_sensor(name, generation)
             sensor_data: SensorData = (
                 SensorData.select()
                 .where(SensorData.sensor_id == sensor.id)

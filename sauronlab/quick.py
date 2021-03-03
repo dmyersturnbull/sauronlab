@@ -540,12 +540,12 @@ class Quick:
         trans = transform.fit(df)
         if path_stub is not None:
             path_stub = Path(path_stub)
-            h5_path = path_stub.with_suffix(".transform.h5")
+            feather_path = path_stub.with_suffix(".transform.feather")
             json_path = path_stub.with_suffix(".transform.json")
             pdf_path = path_stub.with_suffix(".transform.pdf")
-            trans.to_hdf(h5_path)
+            trans.to_feather(feather_path)
             Tools.save_json(all_params, json_path)
-            logger.info(f"Saved {h5_path} and {json_path}")
+            logger.info(f"Saved {feather_path} and {json_path}")
         recolor = "color" not in df.index_names() or len(df["color"].unique()) == 1
         figure = WellPlotters.basic(trans, recolor=recolor)
         if path_stub is not None:
@@ -1059,7 +1059,7 @@ class Quick:
                 "["
                 + "; ".join(
                     [
-                        "r" + str(ValarTools.run(r)) + ": " + ", ".join(ValarTools.features_on(r))
+                        "r" + str(Runs.fetch(r)) + ": " + ", ".join(ValarTools.features_on(r))
                         for r in run
                     ]
                 )

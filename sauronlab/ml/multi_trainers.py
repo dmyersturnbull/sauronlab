@@ -141,10 +141,10 @@ class MultiTrainer:
         decisions = []
         for tt, subdir, n_trained in self._iterate(df):
             if subdir.exists_with_decision():
-                logger.debug((f"{subdir} already trained"))
+                logger.debug(f"{subdir} already trained")
                 decision = DecisionFrame.read_csv(subdir.decision_csv)
             else:
-                logger.debug((f"Training {subdir}"))
+                logger.debug(f"Training {subdir}")
                 silence = n_trained > 0 and not self.always_log
                 with Tools.silenced(no_stderr=silence, no_stdout=silence):
                     with logger.suppressed(silence):

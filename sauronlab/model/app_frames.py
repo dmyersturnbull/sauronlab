@@ -311,7 +311,6 @@ class AppFrame(TypedDf):
 
         """
         battery = Batteries.fetch(battery)
-        simplifier = ValarTools.assay_name_simplifier()
         positions = list(
             AssayPositions.select(AssayPositions, Assays)
             .join(Assays)
@@ -340,7 +339,7 @@ class AppFrame(TypedDf):
                         s.name,
                         ValarTools.stimulus_display_color(s),
                         a.name,
-                        simplifier(a.name),
+                        ValarTools.simplify_assay_name(a.name),
                         ValarTools.assay_ms_per_stimframe(a.name) * ap.start,
                         ValarTools.assay_ms_per_stimframe(a.name) * (ap.start + a.length),
                         ValarTools.assay_ms_per_stimframe(a.name) * a.length,

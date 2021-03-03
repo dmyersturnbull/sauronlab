@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import struct
 
-import joblib
 from pocketutils.biochem.multiwell_plates import WB1
 from pocketutils.core import *
 from pocketutils.core.chars import *
@@ -12,7 +11,6 @@ from pocketutils.full import Tools as _Tools
 from typeddfs import TypedDfs
 
 from sauronlab.core._imports import *
-from sauronlab.core.environment import sauronlab_env
 from sauronlab.core.valar_singleton import *
 
 
@@ -277,30 +275,6 @@ class SauronlabValarTools:
 
 class Tools(_Tools, SauronlabValarTools):
     """ """
-
-    @classmethod
-    def parallel(
-        cls,
-        things: Iterable[I],
-        function: Callable[[I], V],
-        n_jobs: Optional[int] = sauronlab_env.n_cores,
-        verbosity: int = 1,
-    ) -> V:
-        """
-        Trivially calls the function in a :class:`joblib.Parallel` with :func:`joblib.delayed`.
-
-        Args:
-            things:
-            function:
-            n_jobs:
-            verbosity:
-
-        Returns:
-            The result returned from ``function``
-        """
-        return joblib.Parallel(n_jobs=n_jobs, verbose=verbosity)(
-            joblib.delayed(function)(i) for i in things
-        )
 
     @classmethod
     def prepped_file(cls, path: PathLike, exist_ok: bool = True) -> Path:

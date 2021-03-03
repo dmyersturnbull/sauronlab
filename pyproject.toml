@@ -68,6 +68,7 @@ numpy                          = ">=1.20, <2.0"
 pandas                         = ">=1.2, <2.0"
 peewee                         = ">=3.14, <4.0"
 pillow                         = "^8"
+pyarrow                        = ">=3.0, <4.0"
 pydub                          = ">=0.24, <1.0"
 requests                       = ">=2.25, <3"
 scipy                          = ">=1.6, <2.0"
@@ -81,11 +82,11 @@ moviepy                        = ">=1.0, <2.0"
 seaborn                        = ">=0.11, <1.0"
 
 decorateme                     = ">=0.2, <1.0"
-typeddfs                       = ">=0.4, <1.0"
+typeddfs                       = {git="https://github.com/dmyersturnbull/typed-dfs.git", tag = "v0.6.0-alpha.1"}
 # we're actually using "biochem" too, but we don't need any extra dependencies
-pocketutils                    = {version=">=0.4, <1.0", extras=["tools", "notebooks", "plotting"]}
+pocketutils                    = {git="https://github.com/dmyersturnbull/pocketutils.git", tag="v0.5.0-snapshot", extras=["tools", "notebooks", "plotting"]}
 valarpy                        = {git="https://github.com/dmyersturnbull/valarpy.git", tag = "v3.0.0-alpha.1"}
-chemserve                      = {optional = true, git="https://github.com/dmyersturnbull/chemserve.git", tag = "v0.1.0-alpha.1"}
+#chemserve                      = {optional = true, git="https://github.com/dmyersturnbull/chemserve.git", tag = "v0.1.0-alpha.1"}
 h5py                           = {optional=true, version=">=3.1, <4.0"}
 MulticoreTSNE                  = {optional=true, version="0.1, <0.2"}
 python-levenshtein             = {optional = true, version="^0.12"}

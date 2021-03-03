@@ -7,7 +7,7 @@ from moviepy.video.io.VideoFileClip import VideoFileClip
 
 from sauronlab.model.cache_interfaces import ASauronxVideo
 from sauronlab.core.core_imports import *
-from sauronlab.core.video_core import VideoCore
+from sauronlab.extras.video_core import VideoCore
 from sauronlab.model.roi_tools import *
 from sauronlab.model.wf_builders import *
 from sauronlab.viz.kvrc import *

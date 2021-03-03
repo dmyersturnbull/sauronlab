@@ -125,7 +125,7 @@ class SauronlabEnvironment:
         self.use_multicore_tsne       = props.bool("multicore_tsne", False)
         self.joblib_compression_level = props.int("joblib_compression_level", 3)
         self.n_cores                  = props.int("n_cores", 1)
-        self.jupyter_template         = props.file("jupyter_template", props.resource("jupyter_template.txt"))
+        self.jupyter_template         = props.file("jupyter_template", props.resource("templates", "jupyter.txt"))
         self.matplotlib_style         = props.file("matplotlib_style", props.resource("styles", "default.mplstyle"))
         self.viz_file                 = props.file("viz_file", props.resource("styles", "default.mplstyle"))
         self.user                     = Users.fetch(self.username)
