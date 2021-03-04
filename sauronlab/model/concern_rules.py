@@ -127,8 +127,8 @@ class MissingSensorConcernRule(ConcernRule):
             run = Runs.fetch(run)
             # TODO check registry
             generation = ValarTools.generation_of(run)
-            expected = ValarTools.required_sensors(generation).values()
-            actual = ValarTools.sensors_on(run)
+            expected = set(ValarTools.required_sensors(generation).values())
+            actual = set(ValarTools.sensors_on(run))
             yield self._new(run, generation, expected, actual)
 
 
@@ -176,7 +176,7 @@ class SensorLengthConcernRule(ConcernRule):
             generation = ValarTools.generation_of(run)
             if generation is not DataGeneration.POINTGREY:
                 continue  # not supported -- yet
-            extant_sensor: SensorNames = next(
+            extant_sensor: str = next(
                 iter(k for k, v in ValarTools.required_sensors(generation).items())
             )
             sensor = ValarTools.standard_sensor(extant_sensor, generation)

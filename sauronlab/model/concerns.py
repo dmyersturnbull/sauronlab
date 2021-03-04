@@ -344,7 +344,7 @@ class BatchConcern(Concern):
         }
 
     def description(self) -> str:
-        return f"Suspicious batch b{self.batch.id}: '{self.annotation.name}'"
+        return f"Suspicious batch b{self.batch.id}: '{self.annotation.description}'"
 
 
 @dataclass(frozen=True, order=True)

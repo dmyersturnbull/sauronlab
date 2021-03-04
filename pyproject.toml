@@ -12,7 +12,7 @@ build-backend = "poetry.masonry.api"
 
 [tool.poetry]
 name = "sauronlab"
-version = "0.1.0"
+version = "0.1.0-alpha.snapshot"
 description = "Zebrafish behavioral profiling and visualization in Python."
 include = [
     "README.md",
@@ -28,7 +28,7 @@ homepage = "https://github.com/dmyersturnbull/sauronlab"
 repository = "https://github.com/dmyersturnbull/sauronlab"
 documentation = "https://sauronlab.readthedocs.io"
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 2 - Pre-Alpha",
     "Natural Language :: English",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.8",

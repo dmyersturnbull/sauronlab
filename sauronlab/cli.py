@@ -133,7 +133,7 @@ class Commands:
             runs: Run IDs
 
         """
-        from sauronlab.caches.video_caches import VideoCache
+        from sauronlab.extras.video_caches import VideoCache
 
         cache = VideoCache()
         n_exists = sum([not cache.has_video(v) for v in runs])

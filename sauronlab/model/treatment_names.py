@@ -70,7 +70,6 @@ rcid = re.compile(r"\${?cid\}")
 rbid = re.compile(r"\${?bid\}")
 rinchikey = re.compile(r"\${?([cd]?id\|)?inchikey(?:\?([^\}]+))?\}")
 rchembl = re.compile(r"\${?([cd]?id\|)?chembl(?:\?([^\}]+))?\}")
-rchemspider = re.compile(r"\${?([cd]?id\|)?chemspider(?:\?([^\}]+))?\}")
 rtag = re.compile(r"\${?([cd]?id\|)?tag(?:[:.]([0-9]+))?(?:/([a-z_]+))?(?:\?([^\}]+))?\}")
 rname = re.compile(r"\${?([cd]?id\|)?name(?:[:.]([0-9]+))?(?:/([a-z_]+))?(?:\?([^\}]+))?\}")
 rumdose = re.compile(r"\${um(?:([:.])([0-9]+))?\}")
@@ -102,7 +101,6 @@ class StringTreatmentNamer(TreatmentNamer):
         - ${inchikey}         The inchikey
         - ${connectivity}     The inchikey connectivity
         - ${chembl}           The CheEMBL ID, if it exists
-        - ${chemspider}       The ChemSpider ID, if it exists
         - ${connectivity}     The inchikey connectivity
         - ${name}             The exact compound name passed
         - ${name:10}          The compound name, truncated to 10 characters with a trailing … if needed (note: strips out any trailing ... in the name before truncating)
@@ -150,7 +148,7 @@ class StringTreatmentNamer(TreatmentNamer):
             )
 
         # just test first
-        e = self._format("", 0, 0, None, 0, "", "", 0, 0)
+        e = self._format("", 0, 0, None, 0, "", "", 0)
         bad = []
         for match in rwrong.finditer(e):
             bad.append(match.group(0))
@@ -169,9 +167,7 @@ class StringTreatmentNamer(TreatmentNamer):
 
         """
         name = self._convert(t, name)
-        return self._format(
-            str(t), t.bid, t.cid, t.btag, t.dose, name, t.inchikey, t.chembl, t.chemspider
-        )
+        return self._format(str(t), t.bid, t.cid, t.btag, t.dose, name, t.inchikey, t.chembl)
 
     def _format(
         self,
@@ -183,7 +179,6 @@ class StringTreatmentNamer(TreatmentNamer):
         name: Optional[str],
         inchikey,
         chembl,
-        chemspider,
     ) -> str:
         """
 
@@ -197,7 +192,6 @@ class StringTreatmentNamer(TreatmentNamer):
           name: Optional[str]:
           inchikey:
           chembl:
-          chemspider:
 
         Returns:
 
@@ -208,9 +202,6 @@ class StringTreatmentNamer(TreatmentNamer):
 
         def chemblit(gs):
             return self._fall(gs[0], cid, bid) if chembl is None else chembl
-
-        def chemspiderit(gs):
-            return self._fall(gs[0], cid, bid) if chemspider is None else chemspider
 
         def nameit(gs):
             return self._parse(cid, bid, name, gs[0], gs[1], gs[2], gs[3])
@@ -239,7 +230,6 @@ class StringTreatmentNamer(TreatmentNamer):
         e = self._replace(e, rcid, lambda gs: cid)
         e = self._replace(e, rinchikey, inchikeyit)
         e = self._replace(e, rchembl, chemblit)
-        e = self._replace(e, rchemspider, chemspiderit)
         e = self._replace(e, rname, nameit)
         e = self._replace(e, rtag, tagit)
         e = self._replace(e, rdose, doseit)

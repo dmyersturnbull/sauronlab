@@ -44,7 +44,7 @@ class ValarTools:
     LEGACY_STIM_FRAMERATE = 25
 
     @classmethod
-    def required_sensors(cls, generation: DataGeneration) -> Mapping[SensorNames, Sensors]:
+    def required_sensors(cls, generation: DataGeneration) -> Mapping[str, Sensors]:
         """
 
         Args:
@@ -55,10 +55,13 @@ class ValarTools:
         """
         gens = {x["name"]: x for x in InternalTools.load_resource("core", "generations.json")}
         sensors = gens[generation.name]["sensors"]
-        return dict(Sensors.fetch_all(sensors))
+        kmap = {s.name: s for s in Sensors.fetch_all(sensors.values())}
+        return {key: kmap[value] for key, value in sensors.items()}
 
     @classmethod
-    def standard_sensor(cls, sensor_name: SensorNames, generation: DataGeneration) -> Sensors:
+    def standard_sensor(
+        cls, sensor_name: Union[str, SensorNames], generation: DataGeneration
+    ) -> Sensors:
         """
 
         Args:
@@ -68,8 +71,10 @@ class ValarTools:
         Returns:
 
         """
+        if isinstance(sensor_name, SensorNames):
+            sensor_name = sensor_name.json_name
         gens = {x["name"]: x for x in InternalTools.load_resource("core", "generations.json")}
-        return Sensors.fetch(gens[generation.name]["sensors"][sensor_name.json_name])
+        return Sensors.fetch(gens[generation.name]["sensors"][sensor_name])
 
     @classmethod
     def convert_sensor_data_from_bytes(

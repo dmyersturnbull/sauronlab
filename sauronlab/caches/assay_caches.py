@@ -88,7 +88,7 @@ class AssayFrameCache(AAssayCache):
                 logger.minor(f"Downloading AssayFrame for battery {battery.id}")
                 afs = AssayFrame.of(battery)
                 # noinspection PyTypeChecker
-                afs.to_feather(self.path_of(battery.id))
+                afs.reset_index().to_feather(self.path_of(battery.id))
 
     def __repr__(self):
         return f"{type(self).__name__}('{self.cache_dir}')"

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from typing import Tuple as Tup
 from sauronlab.core.core_imports import *
 
 from .treatments import Treatment, Treatments
@@ -197,6 +198,35 @@ class WellFrameColumnTools:
         "_feature",
     ]
     _o_date_cols = ["datetime_dosed"]
+    _o_tuple_str_cols = ["compound_names"]
+    _o_tuple_int_cols = ["c_ids", "b_ids"]
+
+    @classmethod
+    def deserialize_oint_tuple(cls, st: str) -> Tup[Optional[int], ...]:
+        if st == "":
+            return tuple()
+        # full width vertical bar (｜, U+FF5C)
+        return tuple([None if s == "▯" else int(s) for s in st.split("｜")])
+
+    @classmethod
+    def serialize_oint_tuple(cls, tup: Tup[Optional[int], ...]) -> str:
+        # full width vertical bar (｜, U+FF5C)
+        return "｜".join(["▯" if s is None else str(s) for s in tup])
+
+    @classmethod
+    def deserialize_ostr_tuple(cls, st: str) -> Tup[Optional[str], ...]:
+        # don't permit empty strs -- they're None
+        # full width vertical bar (｜, U+FF5C)
+        if st == "":
+            return tuple()
+        return tuple([None if s == "▯" else str(s) for s in st.split("｜")])
+
+    @classmethod
+    def serialize_ostr_tuple(cls, tup: Tup[Optional[str], ...]) -> str:
+        if any([t is not None and ("｜" in t or "▯" in t) for t in tup]):
+            raise AssertionError(f"Tuple {tup} contains a forbidden char!")
+        # full width vertical bar (｜, U+FF5C)
+        return "｜".join(["▯" if s is None else s for s in tup])
 
     @classmethod
     def from_nan(cls, df: pd.DataFrame):

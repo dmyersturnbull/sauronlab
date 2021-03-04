@@ -15,6 +15,9 @@ class InvalidWellFrameError(ConstructionError):
     pass
 
 
+SerializedWellFrame = TypedDfs.untyped("SerializedWellFrame")
+
+
 class AbsWellFrame(TypedDf):
     def __getitem__(self, item) -> __qualname__:
         if isinstance(item, str) and item in self.index.names:
@@ -29,6 +32,32 @@ class AbsWellFrame(TypedDf):
         See ``convert``.
         """
         return cls.convert(df)
+
+    @classmethod
+    def deseralize(cls, df: SerializedWellFrame) -> WellFrame:
+        df = cls.convert(df)
+        # Feather requires str column names
+        df.columns = df.columns.astype(int)
+        df = df.reset_index()
+        df["treatments"] = df["treatments"].map(Treatments.deserialize)
+        # full width vertical bar (｜, U+FF5C)
+        for c in WellFrameColumnTools._o_tuple_int_cols:
+            df[c] = df[c].map(WellFrameColumnTools.deserialize_oint_tuple)
+        for c in WellFrameColumnTools._o_tuple_str_cols:
+            df[c] = df[c].map(WellFrameColumnTools.deserialize_ostr_tuple)
+        return cls.convert(df)
+
+    def serialize(self) -> SerializedWellFrame:
+        df = self.reset_index().copy()
+        df.__class__ = pd.DataFrame
+        # Feather requires str column names
+        df.columns = df.columns.astype(str)
+        df["treatments"] = df["treatments"].map(Treatments.serialize)
+        for c in WellFrameColumnTools._o_tuple_int_cols:
+            df[c] = df[c].map(WellFrameColumnTools.serialize_oint_tuple)
+        for c in WellFrameColumnTools._o_tuple_str_cols:
+            df[c] = df[c].map(WellFrameColumnTools.serialize_ostr_tuple)
+        return SerializedWellFrame(df)
 
     def meta(self) -> __qualname__:
         """
@@ -1437,4 +1466,10 @@ class WellFrame(AbsWellFrame):
         )
 
 
-__all__ = ["WellFrame", "GroupedWellFrame", "AbsWellFrame", "InvalidWellFrameError"]
+__all__ = [
+    "WellFrame",
+    "GroupedWellFrame",
+    "AbsWellFrame",
+    "InvalidWellFrameError",
+    "SerializedWellFrame",
+]

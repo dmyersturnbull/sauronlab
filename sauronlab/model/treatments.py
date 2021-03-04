@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+import orjson
+
 from sauronlab.core.core_imports import *
 
 
@@ -24,7 +26,33 @@ class Treatment:
     # put these last so the ordering is faster: they're the same iff cid is the same
     inchikey: Optional[str]
     chembl: Optional[str]
-    chemspider: Optional[str]
+
+    @classmethod
+    def deserialize(cls, source: str) -> Treatment:
+        if isinstance(source, Treatment):
+            return source
+        if isinstance(source, str):
+            data = orjson.loads(source)
+        else:
+            data = source  # dict
+        try:
+            return cls(**data)
+        except orjson.JSONDecodeError:
+            logger.error(f"Failed to decode '{source}'")
+            raise
+
+    def serialize(self) -> str:
+        return orjson.dumps(
+            dict(
+                cid=self.cid,
+                bid=self.bid,
+                bhash=self.bhash,
+                btag=self.btag,
+                dose=self.dose,
+                inchikey=self.inchikey,
+                chembl=self.chembl,
+            )
+        ).decode("utf-8")
 
     @classmethod
     def from_well_treatment(cls, condition: WellTreatments) -> Treatment:
@@ -47,7 +75,6 @@ class Treatment:
             dose=condition.micromolar_dose,
             btag=batch.tag,
             chembl=None if compound is None else compound.chembl,
-            chemspider=None if compound is None else compound.chemspider,
         )
 
     @classmethod
@@ -72,7 +99,6 @@ class Treatment:
             dose=dose,
             btag=batch.tag,
             chembl=None if compound is None else compound.chembl,
-            chemspider=None if compound is None else compound.chemspider,
         )
 
     def __str__(self):
@@ -93,7 +119,6 @@ class Treatment:
             btag=self.btag,
             inchikey=self.inchikey,
             chembl=self.chembl,
-            chemspider=self.chemspider,
             dose=self.dose,
         )
 
@@ -115,6 +140,21 @@ class Treatments:
             treatments:
         """
         self.treatments = sorted(set(treatments))
+
+    @classmethod
+    def deserialize(cls, source: str) -> Treatments:
+        if isinstance(source, Treatments):
+            return source
+        try:
+            data = orjson.loads(source)
+            data = [Treatment.deserialize(t) for t in data["treatments"]]
+        except orjson.JSONDecodeError:
+            logger.error(f"Failed to decode {source}")
+            raise
+        return cls(treatments=data)
+
+    def serialize(self) -> str:
+        return '{"treatments":[' + ",".join([t.serialize() for t in self.treatments]) + "]}"
 
     def single(self) -> Treatment:
         """"""

@@ -719,14 +719,11 @@ class Lookups(LookupTool):
             query = Compounds.select(
                 Compounds.id,
                 Compounds.inchikey,
-                Compounds.chemspider,
                 Compounds.chembl,
                 CompoundLabels,
             ).join(CompoundLabels, JOIN.LEFT_OUTER)
         else:
-            query = Compounds.select(
-                Compounds.id, Compounds.inchikey, Compounds.chemspider, Compounds.chembl
-            )
+            query = Compounds.select(Compounds.id, Compounds.inchikey, Compounds.chembl)
         df = (
             LookupBuilder(Compounds)
             .set_query(query)
@@ -736,7 +733,6 @@ class Lookups(LookupTool):
                 "inchikey",
                 "description",
                 ("chembl_id", "chembl"),
-                ("chemspider_id", "chemspider"),
                 ("when_inserted", "created"),
             )
             .query(wheres)
@@ -786,7 +782,6 @@ class Lookups(LookupTool):
             Batches,
             Compounds.id,
             Compounds.inchikey,
-            Compounds.chemspider,
             Compounds.chembl,
             Refs,
             Suppliers,

@@ -4,9 +4,12 @@ import warnings
 
 from sauronlab.core.core_imports import *
 from sauronlab.model.cache_interfaces import AWellCache, ASensorCache
+from sauronlab.model.well_frames import SerializedWellFrame
+from sauronlab.model.wf_tools import *
 from sauronlab.model.features import FeatureType, FeatureTypes
 from sauronlab.model.well_names import WellNamers
 from sauronlab.model.wf_builders import *
+from sauronlab.model.treatments import Treatments
 
 FeatureTypeLike = Union[None, int, str, Features, FeatureType]
 
@@ -150,10 +153,10 @@ class WellCache(AWellCache):
                 .with_names(WellNamers.well())
                 .build()
             )
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                with Tools.silenced(no_stderr=True, no_stdout=False):
-                    self._save(wf)
+            # with warnings.catch_warnings():
+            #    warnings.simplefilter("ignore")
+            #    with Tools.silenced(no_stderr=True, no_stdout=False):
+            self._save(wf)
 
     def _load(self, runs: RunsLike) -> WellFrame:
         """
@@ -169,24 +172,18 @@ class WellCache(AWellCache):
 
         def read(r):
             """"""
-            with Tools.silenced(no_stderr=True, no_stdout=True):
-                try:
-                    df = pd.read_feather(self.path_of(r))
-                except Exception:
-                    raise CacheSaveError(
-                        f"Failed to load run {str(r)} from cache at {self.path_of(r)}"
-                    )
-                df = WellFrame(df)
-            df = df.reset_index()
-            df["name"] = df["well"]
-            df = WellFrame.of(df)
-            if self._dtype is not None:
-                df = df.astype(self._dtype)
-            return df
+            try:
+                # just use plain pd.read_feather right now
+                # we'll deserialize at the end
+                return SerializedWellFrame.read_feather(self.path_of(r))
+            except Exception:
+                raise CacheSaveError(f"Failed to load run {str(r)} from cache at {self.path_of(r)}")
 
-        if len(runs) == 0:
-            return WellFrame.new_empty(1)  # best attempt?
-        return WellFrame(pd.concat([read(r) for r in runs], sort=False))
+        df = WellFrame.deseralize(pd.concat([read(r) for r in runs], sort=False))
+        df = df.with_new_names(df["well"])
+        if self._dtype is not None:
+            df = df.astype(self._dtype)
+        return df
 
     def _save(self, df: WellFrame) -> None:
         """
@@ -197,14 +194,13 @@ class WellCache(AWellCache):
 
         """
         for run in df["run"].unique():
-            dfc = WellFrame.vanilla(df[df["run"] == run].copy())
+            dfc = WellFrame(df[df["run"] == run])
             saved_to = self.path_of(run)
             logger.minor(f"Saving run {run} to {saved_to}")
-            with Tools.silenced(no_stderr=True, no_stdout=True):
-                try:
-                    dfc.to_feather(str(saved_to))
-                except Exception:
-                    raise CacheSaveError(f"Failed to save run {str(run)} to cache at {saved_to}")
+            try:
+                dfc.serialize().to_feather(str(saved_to), version=2, compression="lz4")
+            except Exception:
+                raise CacheSaveError(f"Failed to save run {str(run)} to cache at {saved_to}")
 
 
 __all__ = ["WellCache"]

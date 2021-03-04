@@ -1,16 +1,13 @@
 from __future__ import annotations
 
 import dataclasses
-from dataclasses import dataclass
 import traceback
-
-from PIL.Image import Image
 
 from sauronlab.caches.audio_caches import *
 from sauronlab.caches.caching_wfs import *
 from sauronlab.caches.sensor_caches import *
 from sauronlab.caches.stim_caches import *
-from sauronlab.caches.video_caches import *
+from sauronlab.extras.video_caches import *
 from sauronlab.caches.wf_caches import *
 
 from sauronlab.core.core_imports import *
@@ -513,7 +510,7 @@ class Quick:
         )
         return heater.plot(df, stimframes, starts_at_ms=start_ms, battery=battery)
 
-    def transform(
+    def projection(
         self,
         run: QsLike,
         transform: WellTransform,
@@ -523,7 +520,14 @@ class Quick:
         path_stub: Optional[PathLike] = None,
     ) -> Tup[WellFrame, Figure]:
         """
+        Applies a projection transformation into 2D
+        and plots as a scatter plot.
+        For example, t-SNE, UMAP, or PCA.
+        Saves alongside:
 
+        - ``{path_stub}.transform.feather`` (projected feature data)
+        - ``{path_stub}.transform.json`` (metadata)
+        - ``{path_stub}.transform.pdf`` (2D plot figure)
 
         Args:
             run:
@@ -534,7 +538,7 @@ class Quick:
             path_stub:
 
         Returns:
-
+            A tuple of (transformed ``WellFrame``, ``Figure``)
         """
         df = self.df(run, start_ms=start_ms, end_ms=end_ms)
         trans = transform.fit(df)
@@ -543,7 +547,7 @@ class Quick:
             feather_path = path_stub.with_suffix(".transform.feather")
             json_path = path_stub.with_suffix(".transform.json")
             pdf_path = path_stub.with_suffix(".transform.pdf")
-            trans.to_feather(feather_path)
+            trans.reset_index().to_feather(feather_path)
             Tools.save_json(all_params, json_path)
             logger.info(f"Saved {feather_path} and {json_path}")
         recolor = "color" not in df.index_names() or len(df["color"].unique()) == 1
@@ -1304,7 +1308,11 @@ class Quicks:
         Returns:
 
         """
-        return cls.choose(DataGeneration.POINTGREY, as_of=as_of, **kwargs)
+        kwargs = dict(kwargs)
+        generation = DataGeneration.POINTGREY
+        if "generation" in kwargs:
+            generation = kwargs.pop("generation")
+        return cls.choose(generation, as_of=as_of, **kwargs)
 
     @classmethod
     def legacy_pike_sauronx(cls, as_of: Optional[datetime], **kwargs):

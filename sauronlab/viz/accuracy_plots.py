@@ -116,7 +116,7 @@ class AccuracyPlotter(KvrcPlotting):
         If `df` has column 'control', that will be used to inform colors.
         If it has a column 'class', that will be used to group labels and give them the same color.
         Otherwise pretty straightforward.
-        It relies on sauronlab_rc/KVRC params beggining with 'acc_'; ex: `acc_bar_edge_width` and `acc_point_size`.
+        It relies on sauronlab_rc/KVRC params beginning with 'acc_'; ex: `acc_bar_edge_width` and `acc_point_size`.
 
         Args:
             df: Any BaseScoreFrame (DataFrame) with columns (at least) 'label' and 'score'
