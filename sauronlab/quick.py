@@ -514,7 +514,6 @@ class Quick:
         self,
         run: QsLike,
         transform: WellTransform,
-        all_params: Mapping[str, Any],
         start_ms: Optional[int] = None,
         end_ms: Optional[int] = None,
         path_stub: Optional[PathLike] = None,
@@ -545,11 +544,9 @@ class Quick:
         if path_stub is not None:
             path_stub = Path(path_stub)
             feather_path = path_stub.with_suffix(".transform.feather")
-            json_path = path_stub.with_suffix(".transform.json")
             pdf_path = path_stub.with_suffix(".transform.pdf")
             trans.reset_index().to_feather(feather_path)
-            Tools.save_json(all_params, json_path)
-            logger.info(f"Saved {feather_path} and {json_path}")
+            logger.info(f"Saved {feather_path}")
         recolor = "color" not in df.index_names() or len(df["color"].unique()) == 1
         figure = WellPlotters.basic(trans, recolor=recolor)
         if path_stub is not None:
@@ -756,7 +753,7 @@ class Quick:
         """
         battery = Batteries.fetch(battery)
         if audio_waveform is None:
-            audio_waveform = ValarTools.battery_is_legacy(battery)
+            audio_waveform = not ValarTools.battery_is_legacy(battery)
         if audio_waveform:
             stimframes = self._expanded_stim_cache.load(battery)
         else:

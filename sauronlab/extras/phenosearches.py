@@ -9,6 +9,7 @@ from sauronlab.model.features import *
 from sauronlab.model.stim_frames import *
 from sauronlab.model.well_names import *
 from sauronlab.model.wf_builders import *
+from sauronlab.model.cache_interfaces import ASensorCache
 
 
 class HitFrame(TypedDf):
@@ -249,31 +250,34 @@ class HitSearch:
 
         """
         for i, wf in enumerate(self._build_query()):
-            floats = self.feature.calc(wf, wf.well)
-            dct = {
-                "well_id": wf.well.id,
-                "well_index": wf.well.well_index,
-                "run_id": wf.well.run.id,
-                "run_name": wf.well.run.name,
-                "score": self.primary_score_fn(floats, wf.well),
-            }
-            if "score" in self._min_scores and dct["score"] < self._min_scores["score"]:
-                continue
-            failed = False
-            for name, score in self.secondary_score_fns.items():
-                dct[name] = score(floats, wf.well)
-                if name in self._min_scores and dct[name] < self._min_scores[name]:
-                    failed = True
-                    break
-            if not failed:
-                yield pd.Series(dct)
+            for row in range(len(wf)):
+                floats = wf.values[i]
+                dct = dict(
+                    well_id=wf["well"][row],
+                    well_index=wf["well_index"][row],
+                    run_id=wf["run"][row],
+                    run_name=wf["run_name"],
+                    score=self.primary_score_fn(floats, wf["well"][row]),
+                )
+                if "score" in self._min_scores and dct["score"] < self._min_scores["score"]:
+                    continue
+                failed = False
+                for name, score in self.secondary_score_fns.items():
+                    dct[name] = score(floats, wf.well)
+                    if name in self._min_scores and dct[name] < self._min_scores[name]:
+                        failed = True
+                        break
+                if not failed:
+                    yield pd.Series(dct)
 
     def _build_query(self):
         """ """
-        query = WellFrameQuery().simple(self.as_of, self.feature.valar_feature, self.wheres)
+        builder = WellFrameBuilder(self.as_of)
+        for where in self.wheres:
+            builder = builder.where(where)
         if self._limit is not None:
-            query = query.limit(self._limit)
-        return query
+            builder = builder.limit_to(self._limit)
+        return builder.build()
 
 
 class HitWellFrame(WellFrame):

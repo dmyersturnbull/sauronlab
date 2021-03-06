@@ -23,6 +23,10 @@ class StimFrame(TypedDf, metaclass=abc.ABCMeta):
             which is in turn determined by the audio card, the amplifier setting, and the settings configured in the Toml
     """
 
+    @classmethod
+    def required_index_names(cls) -> Sequence[str]:
+        return ["ms"]
+
     def expand_audio_inplace(
         self, waveform_loader: Callable[[StimulusLike], Waveform], is_legacy: bool
     ) -> None:
@@ -208,6 +212,7 @@ class StimFrame(TypedDf, metaclass=abc.ABCMeta):
                 start_index : start_index + len(assay_frames) - 1, stim_name
             ] = assay_frames
         stimframes = empty_df.fillna(0)
+        stimframes.index.name = "ms"
         if fps_for_sampling is not None:
             return stimframes[:: int(1000 / fps_for_sampling)]
         else:
@@ -216,6 +221,11 @@ class StimFrame(TypedDf, metaclass=abc.ABCMeta):
 
 class BatteryStimFrame(StimFrame):
     """ """
+
+    @classmethod
+    @property
+    def battery(cls) -> Batteries:
+        raise NotImplementedError()
 
     def slice_ms(
         self,
@@ -236,7 +246,8 @@ class BatteryStimFrame(StimFrame):
         """
         battery = battery if isinstance(battery, str) else Batteries.fetch(battery).name
         rdf = StimFrame._slice_stim(self, battery, start_ms, end_ms)
-        rdf.__class__ = BatteryStimFrame
+        rdf.__class__ = self.__class__
+        # noinspection PyTypeChecker
         return rdf
 
     def deltas(self) -> BatteryStimFrame:
@@ -254,7 +265,7 @@ class BatteryStimFrame(StimFrame):
     @classmethod
     def of(
         cls,
-        battery: Union[Batteries, int, str, StimFrame],
+        battery: Union[Batteries, int, str],
         start_ms: Optional[int] = None,
         end_ms: Optional[int] = None,
     ) -> BatteryStimFrame:
@@ -269,16 +280,22 @@ class BatteryStimFrame(StimFrame):
         Returns:
 
         """
-        if isinstance(battery, BatteryStimFrame):
-            return battery
-        if isinstance(battery, pd.DataFrame):
-            battery.__class__ = BatteryStimFrame
-            # noinspection PyTypeChecker
-            return battery
         battery = Batteries.fetch(battery)  # type: Batteries
         stimframes = StimFrame._generate_stimframes(battery, None)
         stimframes = StimFrame._slice_stim(stimframes, battery.name, start_ms, end_ms)
-        return BatteryStimFrame(stimframes)
+
+        return cls._gen_from(battery)(stimframes)
+
+    @classmethod
+    def _gen_from(cls, battery: Batteries) -> Type[BatteryStimFrame]:
+        class BatteryX(BatteryStimFrame):
+            @classmethod
+            @property
+            def battery(cls) -> Batteries:
+                return battery
+
+        BatteryX.__name__ = f"Battery{battery.id}StimFrame"
+        return BatteryX
 
 
 __all__ = ["StimFrame", "BatteryStimFrame"]

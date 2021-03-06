@@ -121,13 +121,12 @@ class StimframeCache(AStimCache):
 
         """
         battery = Batteries.fetch(battery)
-        with Tools.silenced(no_stderr=True, no_stdout=True):
-            try:
-                logger.debug(f"Loading cached battery battery {battery.id}")
-                df = pd.read_feather(self.path_of(battery.id))
-            except Exception as e:
-                raise CacheLoadError(f"Failed to load stimframes for battery {battery.id}") from e
-            return BatteryStimFrame(df)
+        try:
+            logger.debug(f"Loading cached battery battery {battery.id}")
+            df = pd.read_feather(self.path_of(battery.id))
+        except Exception as e:
+            raise CacheLoadError(f"Failed to load stimframes for battery {battery.id}") from e
+        return BatteryStimFrame._gen_from(battery).convert(df)
 
     def _save(self, battery, bsf) -> None:
         """

@@ -174,7 +174,7 @@ class SauronlabRc(KvrcCore):
 
         # trace colors
         self.trace_line_width = config.new_line_width("trace_line_width", mget("lines.linewidth"))
-        self.trace_control_alpha = config.new_alpha("trace_control_alpha", 0.6)
+        self.trace_control_alpha = config.new_alpha("trace_control_alpha", 0.7)
         self.trace_treatment_alpha = config.new_alpha("trace_treatment_alpha", 1.0)
         self.band_control_alpha = config.new_alpha("band_control_alpha", 0.35)
         self.band_treatment_alpha = config.new_alpha("band_treatment_alpha", 0.6)
@@ -324,7 +324,7 @@ class SauronlabRc(KvrcCore):
         # spectrogram and other audio settings
         self.audio_spectrogram_cmap = config.new_cmap("audio_spectrogram_cmap", None)
         self.audio_waveform_point_size = config.new_point_size(
-            "audio_waveform_point_size", 0.1 * mget("lines.markersize")
+            "audio_waveform_point_size", 0.075 * mget("lines.markersize")
         )
         self.audio_waveform_color = config.new_rgb("audio_waveform_color", "black")
 
@@ -398,6 +398,6 @@ class SauronlabRc(KvrcCore):
                 self[z + ".fonttype"] = v
 
 
-sauronlab_rc = SauronlabRc(sauronlab_env.matplotlib_style, sauronlab_env.viz_file)
+sauronlab_rc = SauronlabRc(sauronlab_env.matplotlib_style, sauronlab_env.sauronlab_style)
 
 __all__ = ["sauronlab_rc", "KvrcDefaults", "SauronlabRc"]

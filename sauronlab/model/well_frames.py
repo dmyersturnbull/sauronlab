@@ -892,7 +892,9 @@ class AbsWellFrame(TypedDf):
             The aggregated WellFrame
 
         """
-        return self.agg_by(WellFrameColumns.important_cols, function, **function_kwargs)
+        return self.agg_by(
+            WellFrameColumns.important_cols, function, function_kwargs=function_kwargs
+        )
 
     def agg_by_all(
         self,
@@ -921,7 +923,7 @@ class AbsWellFrame(TypedDf):
         self,
         index_names: Union[str, Collection[str]],
         function: Union[str, Callable[[pd.DataFrame], pd.DataFrame]] = "mean",
-        **function_kwargs,
+        function_kwargs: Optional[Mapping[str, Any]] = None,
     ) -> AbsWellFrame:
         """
         Applies a groupby followed by an aggregation function.
@@ -934,6 +936,7 @@ class AbsWellFrame(TypedDf):
             function: Either a function or a string in the list:
                       ["mean", "std", "median", "var", "sum", "sem", "prod", "size", "min", "max", "first", "last"]
                       **You should strongly prefer using a string if possible: the performance is massively better.**
+            function_kwargs: Passed into ``function``
 
         Returns:
             A WellFrame-like object with only the "name" column guaranteed to exist
@@ -941,6 +944,8 @@ class AbsWellFrame(TypedDf):
             This result is not sorted.
 
         """
+        if function_kwargs is None:
+            function_kwargs = {}
         # incredibly, Pandas groupby breaks if it's a set
         index_names = [index_names] if isinstance(index_names, str) else list(index_names)
         std_fn = self._get_fn(function, function_kwargs)
@@ -1241,10 +1246,10 @@ class AbsWellFrame(TypedDf):
         Sets the __class__ of `df` to WellFrame.
         Instantaneous and in-place.
         Does not perform any checks; see `of` for a safer but slower method.
+        Better performance than ``WellFrame(df)``.
 
         Args:
           df: A Pandas DataFrame or subclass
-          df: pd.DataFrame:
 
         Returns:
           A WellFrame

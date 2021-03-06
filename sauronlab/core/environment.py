@@ -127,7 +127,7 @@ class SauronlabEnvironment:
         self.n_cores                  = props.int("n_cores", 1)
         self.jupyter_template         = props.file("jupyter_template", props.resource("templates", "jupyter.txt"))
         self.matplotlib_style         = props.file("matplotlib_style", props.resource("styles", "default.mplstyle"))
-        self.viz_file                 = props.file("viz_file", props.resource("styles", "default.mplstyle"))
+        self.sauronlab_style          = props.file("viz_file", props.resource("styles", "default.properties"))
         self.user                     = Users.fetch(self.username)
         self.user_ref                 = Refs.fetch_or_none("manual:" + self.username)
         # fmt: on

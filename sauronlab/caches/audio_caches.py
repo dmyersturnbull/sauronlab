@@ -1,9 +1,9 @@
 import pydub
+import soundfile
 from moviepy.audio.io.AudioFileClip import AudioClip, AudioFileClip
 
 from sauronlab.core.core_imports import *
 from sauronlab.core.environment import sauronlab_env
-from sauronlab.model.audio import *
 from sauronlab.model.cache_interfaces import AnAudioStimulusCache, StimulusWaveform
 
 DEFAULT_CACHE_DIR = sauronlab_env.cache_dir / "stimuli"
@@ -143,7 +143,7 @@ class AudioStimulusCache(AnAudioStimulusCache):
         stimulus = Stimuli.fetch(stimulus)
         path = self.load(stimulus)
         try:
-            data, sampling_rate = soundfile.load(str(path))
+            data, sampling_rate = soundfile.read(str(path))
         except Exception:
             raise LoadError(f"Failed to read file {path}")
         return StimulusWaveform(
