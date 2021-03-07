@@ -43,12 +43,9 @@ from pocketutils.notebooks.magic_template import *
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 
-from sauronlab import version
-from sauronlab.startup import *
-
 (
     MagicTemplate.from_path(sauronlab_env.jupyter_template, prefix="${", suffix="}")
-    .add_version(version)
+    .add_version(sauronlab_version)
     .add_datetime()
     .add("username", sauronlab_env.username)
     .add("author", sauronlab_env.username.title())
@@ -127,7 +124,18 @@ def _plot_all(it: Iterable[Tup[str, Figure]]) -> None:
         plt.show(figure)
 
 
+def _save_all(it: Iterable[Tup[str, Figure]], path: PathLike) -> None:
+    """
+
+    Args:
+        it:
+    """
+    # noinspection PyTypeChecker
+    FigureTools.save(it, path=path)
+
+
 plt.show_all = _plot_all
+plt.save_all = _save_all
 
 Namers = WellNamers
 Cols = WellFrameColumns

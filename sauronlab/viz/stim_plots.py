@@ -40,6 +40,7 @@ class StimframesPlotter(CakeLayer, KvrcPlotting):
 
         Args:
              stimframes:
+             battery:
              ax:
              assays:
              starts_at_ms:
@@ -57,7 +58,9 @@ class StimframesPlotter(CakeLayer, KvrcPlotting):
         sfps = ValarTools.battery_stimframes_per_second(battery)
         n_ms = int(len(stimframes) * 1000 / sfps)
         if ax is None:
-            figure = plt.figure(figsize=(sauronlab_rc.trace_width, sauronlab_rc.trace_height))
+            figure = plt.figure(
+                figsize=(sauronlab_rc.trace_width, 2 * sauronlab_rc.trace_layer_const_height)
+            )
             ax = figure.add_subplot(111)
         # the figure should always have a white background
         ax.set_facecolor("white")

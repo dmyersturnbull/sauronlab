@@ -1,5 +1,6 @@
 %matplotlib widget
 from sauronlab.jupyter import *
+plt.interactive(False)
 today = datetime${datetime}
 quick = Quicks.pointgrey(as_of=today)
 

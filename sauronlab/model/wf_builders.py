@@ -21,30 +21,6 @@ class WellFrameQuery:
     """
 
     @classmethod
-    def simple(
-        cls, as_of: datetime, feature: Union[Features, int, str], wheres: Iterable[ExpressionLike]
-    ) -> peewee.Query:
-        """
-
-
-        Args:
-            as_of:
-            feature:
-            wheres: Iterable[ExpressionLike]:
-
-        Returns:
-
-        """
-        if isinstance(feature, FeatureType):
-            feature = feature.valar_feature
-        query = WellFrameQuery().build(WellFrameQuery.fields())
-        query = query.where(Runs.created > as_of)
-        query = query.where(Features.id == feature.id)
-        for where in wheres:
-            query = query.where(where)
-        return query.order_by(*WellFrameQuery.sort_order())
-
-    @classmethod
     def sort_order(cls):
         """
         ALWAYS use this.
@@ -79,7 +55,6 @@ class WellFrameQuery:
             ProjectTypes,
             Batteries,
             TemplatePlates,
-            TransferPlates,
         ]
 
     def build(self, select_fields) -> peewee.Query:
@@ -124,7 +99,6 @@ class WellFrameQuery:
             .switch(Experiments)
             .join(TemplatePlates, JOIN.LEFT_OUTER)
             .switch(Experiments)
-            .join(TransferPlates, JOIN.LEFT_OUTER)
         )
 
 

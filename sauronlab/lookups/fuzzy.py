@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fuzzywuzzy import fuzz, process
+from rapidfuzz.process import extract as fuzz_search
 
 from sauronlab.core.core_imports import *
 from sauronlab.lookups import *
@@ -35,7 +35,7 @@ class Fuzzy:
         logger.debug(f"Searching project names for '{s}'...")
         query = Projects.select()
         data = list(query)
-        raw = process.extract(s, {x.name for x in data}, limit=limit)
+        raw = fuzz_search(s, {x.name for x in data}, limit=limit)
         matches = {name: score for name, score in raw if score >= min_score}
         projects = {x.id: x.name for x in data if x.name in matches.keys()}
         logger.debug(f"Done. Found {len(projects)} projects.")
@@ -64,7 +64,7 @@ class Fuzzy:
         logger.debug(f"Searching experiment names for '{s}'...")
         query = Experiments.select()
         data = list(query)
-        raw = process.extract(s, {x.name for x in data}, limit=limit)
+        raw = fuzz_search(s, {x.name for x in data}, limit=limit)
         matches = {name: score for name, score in raw if score >= min_score}
         experiments = {x.id: x.name for x in data if x.name in matches.keys()}
         logger.debug(f"Done. Found {len(experiments)} experiments.")
@@ -93,7 +93,7 @@ class Fuzzy:
         logger.debug(f"Searching batteries for '{s}'...")
         query = Batteries.select()
         data = list(query)
-        raw = process.extract(s, {x.name for x in data}, limit=limit)
+        raw = fuzz_search(s, {x.name for x in data}, limit=limit)
         matches = {name: score for name, score in raw if score >= min_score}
         batteries = {x.id: x.name for x in data if x.name in matches.keys()}
         logger.debug(f"Done. Found {len(batteries)} rows.")
@@ -122,7 +122,7 @@ class Fuzzy:
         logger.debug(f"Searching assays for '{s}'...")
         query = Assays.select()
         data = list(query)
-        raw = process.extract(s, {x.name for x in data}, limit=limit)
+        raw = fuzz_search(s, {x.name for x in data}, limit=limit)
         matches = {name: score for name, score in raw if score >= min_score}
         assays = {x.id: x.name for x in data if x.name in matches.keys()}
         logger.debug(f"Done. Found {len(assays)} rows.")
@@ -151,7 +151,7 @@ class Fuzzy:
         logger.debug(f"Searching run descriptions for '{s}'...")
         query = Runs.select()
         data = list(query)
-        raw = process.extract(s, {x.description for x in data}, limit=limit)
+        raw = fuzz_search(s, {x.description for x in data}, limit=limit)
         matches = {name: score for name, score in raw if score >= min_score}
         runs = {x.id: x.description for x in data if x.description in matches.keys()}
         logger.debug(f"Done. Found {len(runs)} rows.")
@@ -180,7 +180,7 @@ class Fuzzy:
         logger.debug(f"Searching variant names for '{s}'...")
         query = GeneticVariants.select()
         data = list(query)
-        raw = process.extract(s, {x.name for x in data}, limit=limit)
+        raw = fuzz_search(s, {x.name for x in data}, limit=limit)
         matches = {name: score for name, score in raw if score >= min_score}
         variants = {x.id: x.name for x in data if x.name in matches.keys()}
         logger.debug(f"Done. Found {len(variants)} rows.")
@@ -211,7 +211,7 @@ class Fuzzy:
         if ref is not None:
             query = query.where(CompoundLabels.ref_id == Refs.fetch(ref).id)
         data = list(query)
-        raw = process.extract(s, {x.name for x in data}, limit=limit)
+        raw = fuzz_searcht(s, {x.name for x in data}, limit=limit)
         matches = {name: score for name, score in raw if score >= min_score}
         compounds = {x.compound_id: x.name for x in data if x.name in matches.keys()}
         logger.debug(f"Done. Found {len(compounds)} rows.")
@@ -242,7 +242,7 @@ class Fuzzy:
         if ref is not None:
             query = query.where(BatchLabels.ref_id == Refs.fetch(ref).id)
         data = list(query)
-        raw = process.extract(s, {x.name for x in data}, limit=limit)
+        raw = fuzz_search(s, {x.name for x in data}, limit=limit)
         matches = {name: score for name, score in raw if score >= min_score}
         batches = {x.batch_id: x.name for x in data if x.name in matches.keys()}
         logger.debug(f"Done. Found {len(batches)} rows.")
@@ -273,7 +273,7 @@ class Fuzzy:
         if ref is not None:
             query = query.where(MandosObjectTags.ref_id == Refs.fetch(ref).id)
         data = list(query)
-        raw = process.extract(s, {x.name for x in data}, limit=limit)
+        raw = fuzz_search(s, {x.name for x in data}, limit=limit)
         matches = {name: score for name, score in raw if score >= min_score}
         objects = {x.object_id: x.name for x in data if x.name in matches.keys()}
         logger.debug(f"Done. Found {len(objects)} rows.")

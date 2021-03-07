@@ -112,7 +112,7 @@ class SauronlabEnvironment:
         props = PropSet.read(self.config_file)
         # fmt: off
         self.whereami                 = Path(__file__).parent.parent
-        self.valarpy_path             = Valar.find_extant_path(os.environ.get("VALARPY_CONFIG"))
+        self.valarpy_path             = Path(props.str("valarpy_config", MAIN_DIR / "connection.json"))
         self.valarpy_data             = FilesysTools.load_json(self.valarpy_path)
         self.tunnel_host              = props.str_nullable("tunnel_host", None)
         self.tunnel_port              = props.str_nullable("tunnel_port", None)
@@ -127,7 +127,7 @@ class SauronlabEnvironment:
         self.n_cores                  = props.int("n_cores", 1)
         self.jupyter_template         = props.file("jupyter_template", props.resource("templates", "jupyter.txt"))
         self.matplotlib_style         = props.file("matplotlib_style", props.resource("styles", "default.mplstyle"))
-        self.viz_file                 = props.file("viz_file", props.resource("styles", "default.mplstyle"))
+        self.sauronlab_style          = props.file("viz_file", props.resource("styles", "default.properties"))
         self.user                     = Users.fetch(self.username)
         self.user_ref                 = Refs.fetch_or_none("manual:" + self.username)
         # fmt: on

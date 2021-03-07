@@ -47,7 +47,12 @@ class FigureTools(_FigureTools):
 
     @classmethod
     def save(
-        cls, figure: FigureSeqLike, path: PathLike, names: Optional[Iterator[str]] = None, **kwargs
+        cls,
+        figure: FigureSeqLike,
+        path: PathLike,
+        names: Optional[Iterator[str]] = None,
+        clear: bool = True,
+        **kwargs,
     ) -> None:
         """
         Save a figure or sequence of figures to `FigureSaver`.
@@ -57,11 +62,12 @@ class FigureTools(_FigureTools):
             figure: FigureSeqLike:
             path: PathLike:
             names:
+            clear: After every save
             **kwargs:
 
         """
         path = str(path).replace("/", os.sep)
-        FigureSaver(**kwargs).save(figure, path, names=names)
+        FigureSaver(clear=clear, **kwargs).save(figure, path, names=names)
 
     @classmethod
     def add_aligned_colorbar(
@@ -79,9 +85,6 @@ class FigureTools(_FigureTools):
             mat: This must be the return value from `matshow` or `imshow`
             size: The width of the colorbar
             number_format: Formatting string for the text labels on the colorbar (passed to `ax.figure.colorbar`)
-            ax: Axes:
-            size:
-            number_format:
 
         Returns:
 

@@ -12,7 +12,7 @@ build-backend = "poetry.masonry.api"
 
 [tool.poetry]
 name = "sauronlab"
-version = "0.1.0-alpha.snapshot"
+version = "0.1.0+dev.snapshot"
 description = "Zebrafish behavioral profiling and visualization in Python."
 include = [
     "README.md",
@@ -48,7 +48,7 @@ Issues = "https://github.com/dmyersturnbull/sauronlab/issues"
 Download = "https://pypi.org/project/sauronlab/"
 
 [tool.poetry.scripts]
-sauronlab = "sauronlab.cli:main"
+sauronlab = "sauronlab.cli:cli"
 
 
 #########################################################################################
@@ -60,7 +60,6 @@ python                         = ">=3.8, <3.10"
 clana                          = "~0.4"
 colorama                       = ">=0.4, <1.0"
 cycler                         = ">=0.10, <1.0"
-fuzzywuzzy                     = ">=0.18, <1.0"
 joblib                         = "^1.0"
 matplotlib                     = ">=3.3, <4.0"
 natsort                        = "^7"
@@ -70,6 +69,7 @@ peewee                         = ">=3.14, <4.0"
 pillow                         = "^8"
 pyarrow                        = ">=3.0, <4.0"
 pydub                          = ">=0.24, <1.0"
+rapidfuzz                      = ">=1.1,<2.0"
 requests                       = ">=2.25, <3"
 scipy                          = ">=1.6, <2.0"
 scikit-learn                   = ">=0.24, <1.0"
@@ -86,10 +86,8 @@ typeddfs                       = {git="https://github.com/dmyersturnbull/typed-d
 # we're actually using "biochem" too, but we don't need any extra dependencies
 pocketutils                    = {git="https://github.com/dmyersturnbull/pocketutils.git", tag="v0.5.0-snapshot", extras=["tools", "notebooks", "plotting"]}
 valarpy                        = {git="https://github.com/dmyersturnbull/valarpy.git", tag = "v3.0.0-alpha.1"}
-#chemserve                      = {optional = true, git="https://github.com/dmyersturnbull/chemserve.git", tag = "v0.1.0-alpha.1"}
-h5py                           = {optional=true, version=">=3.1, <4.0"}
-MulticoreTSNE                  = {optional=true, version="0.1, <0.2"}
-python-levenshtein             = {optional = true, version="^0.12"}
+#chemserve                     = {optional = true, git="https://github.com/dmyersturnbull/chemserve.git", tag = "v0.1.0-alpha.1"}
+#h5py                          = {optional=true, version=">=3.1, <4.0"}
 jupyterlab                     = {optional = true, version="^3.0"}
 ipympl                         = {optional = true, version="^0.6"}
 
@@ -110,8 +108,7 @@ sphinx-copybutton        = ">=0.3, <1.0"
 sphinx-rtd-theme         = ">=0.5, <1.0"
 
 [tool.poetry.extras]
-perf = ["python-levenshtein", "MulticoreTSNE"]
-extras = ["chemserve", "jupyterlab", "ipympl"]
+extras = ["jupyterlab", "ipympl"]
 
 #########################################################################################
 # Tyrannosaurus

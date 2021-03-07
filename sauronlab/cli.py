@@ -31,6 +31,7 @@ class Installer:
 
         """
         typer.echo("Setting up sauronlab configuration...")
+        MAIN_DIR.mkdir(parents=True, exist_ok=True)
         conn_file, config_file = MAIN_DIR / "connection.json", MAIN_DIR / "sauronlab.config"
         if not conn_file.exists():
             typer.echo("No connection.json detected. Asking for that info:")
