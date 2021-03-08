@@ -23,8 +23,7 @@ for a high-level overview and information on how to obtain data.
 In particular, **note that you probably don’t need this package**.
 
 **⚠ Caution:**
-This is a _preview_ that has significant
-[known issues](https://github.com/dmyersturnbull/sauronlab#-known-issues).
+This is a _preview_ that has significant [known issues](#-known-issues).
 
 ### 💡 Usage
 
@@ -37,32 +36,29 @@ See the [start-here example notebook](https://github.com/dmyersturnbull/sauron-p
 
 You will need Python 3.9+.
 For a suggested setup, see
-[_new data science steps_](https://dmyersturnbull.github.io/#-new-data-science-steps-with-python).
+[_new data science steps_](https://dmyersturnbull.github.io/data-science-setup).
 
-Sauronlab is best installed via pip and [poetry](https://python-poetry.org).
-The simplest way is:
-`pip install git+https://github.com/dmyersturnbull/sauronlab.git/main[extras]`.
-Equally good is [sauronlab-env.yml](https://github.com/dmyersturnbull/sauronlab/blob/main/sauronlab-env.yml)
-via `conda env create --file=https://raw.githubusercontent.com/dmyersturnbull/sauronlab/main/sauronlab-env.yml`.
-This will create a new environment called _sauronlab_.
-(Note that this is different from the _sauronpub_ environment file in the sauron-publication repo.
-The latter is intended only for exact replication of the analyses used for the manuscript.)
+Sauronlab is built and installed using [poetry](https://python-poetry.org).
+You can use either pip or conda (both use Poetry behind the scenes):
+
+- With conda: `conda env create --file=https://raw.githubusercontent.com/dmyersturnbull/sauronlab/main/sauronlab-env.yml`
+- `pip install git+https://github.com/dmyersturnbull/sauronlab.git/main[extras]`
+
+The first option will create an environment called _sauronlab_.
+Note that it is different from the _sauronpub_ environment file in the sauron-publication repo;
+the latter is intended only for exact replication of the analyses used for the manuscript.
 
 Run `sauronlab init` to finalize the installation.
-If you will be connecting to a database over SSH, use the suggested random value for _connection port_,
-and leave _connection host_, _tunnel host_ and _tunnel port_ as their defaults.
-The _tunnel host_ should be an alias in your SSH config (e.g. _valinor_ or _valinor.ucsf.edu_).
-(The _tunnel host_ and _tunnel port_ refer to the remote server accessed over SSH.)
-Leave `shire` as `none` unless you have access to a raw data hierarchy.
-Some files were created under `~/.sauronlab`.
-Take a look and edit the files if needed.
+It will walk you through and ask some questions,
+generating config files under `~/.sauronlab`.
+You can edit the those files for [additional configuration](#-additional-configuration).
 
 **📝 Technical note:**
 Sauronlab is available on both [conda-forge](https://anaconda.org/conda-forge/sauronlab)
 and [PyPi](http://pypi.org/project/sauronlab).
 We generally recommend installing via pip/Poetry.
 The reasons for this are described
-[in this post](https://dmyersturnbull.github.io/#-the-python-build-landscape).
+[in this post](https://dmyersturnbull.github.io/python-infrastructure).
 Briefly, conda will not detect dependency conflicts for packages that are only available on PyPi.
 
 ### 🔨 Building
@@ -100,15 +96,15 @@ During this refactoring, some code is experimental and poorly tested.
 In general, lower-level code such as models (e.g. `WellFrame`) are reliable,
 while replacement tests are being added to higher-level code.
 Experimental and full untested code is marked with `status(CodeStatus.Immature)`
-from [decorate-me](https://github.com/dmyersturnbull/decorate-me/blob/main/decorateme/abcd.py);
+from [decorate-me](https://github.com/dmyersturnbull/decorate-me);
 using them will trigger a warning (`ImmatureWarning`).
 Such code is highly subject to change or removal.
 
 ### 🔧 Additional configuration
 
-You can also overwrite any sauronlab
-[_resource_ file](https://github.com/dmyersturnbull/sauronlab/tree/main/sauronlab/resources)
-by copying it to `~/.sauronlab/...`.
+You can also quietly overwrite any
+[resource file](https://github.com/dmyersturnbull/sauronlab/tree/main/sauronlab/resources)
+internal to sauronlab by copying it to `~/.sauronlab/...`.
 For example, you can copy
 `https://github.com/dmyersturnbull/sauronlab/blob/main/sauronlab/resources/viz/stim_colors.json` to
 `~/.sauronlab/viz/stim_colors.json` to change the default colors used to plot stimuli.

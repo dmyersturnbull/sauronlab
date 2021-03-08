@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import pydub
-from moviepy.audio.io.AudioFileClip import AudioClip
 
 from sauronlab.core.core_imports import *
 from sauronlab.core.valar_singleton import *
@@ -184,18 +183,6 @@ class AVideoCache(ASauronlabCache[RunLike, ASauronxVideo], metaclass=ABCMeta):
 
 class AnAudioStimulusCache(ASauronlabCache[StimulusLike, Path], metaclass=ABCMeta):
     """ """
-
-    def load_moviepy(self, stimulus: StimulusLike) -> AudioClip:
-        """
-
-
-        Args:
-            stimulus:
-
-        Returns:
-
-        """
-        raise NotImplementedError()
 
     def load_pydub(self, name: str) -> pydub.AudioSegment:
         """

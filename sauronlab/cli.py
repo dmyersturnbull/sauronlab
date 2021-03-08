@@ -1,11 +1,12 @@
-import os
-import orjson
 import logging
+import os
+import random
+import shutil
 from pathlib import Path
 from subprocess import check_call, DEVNULL
 from typing import List
-import random
 
+import orjson
 import typer
 
 from sauronlab.core import SauronlabResources, log_factory, logger
@@ -28,33 +29,73 @@ class Installer:
     def init(self) -> None:
         """
         Initializes.
-
         """
-        typer.echo("Setting up sauronlab configuration...")
+        self._info("Setting up sauronlab configuration...")
         MAIN_DIR.mkdir(parents=True, exist_ok=True)
-        conn_file, config_file = MAIN_DIR / "connection.json", MAIN_DIR / "sauronlab.config"
+        conn_file = MAIN_DIR / "connection.json"
+        config_file = MAIN_DIR / "sauronlab.config"
+        ssh_config_file = Path.home() / ".ssh" / "config"
+        tunneling = None
         if not conn_file.exists():
-            typer.echo("No connection.json detected. Asking for that info:")
-            rand = random.randint(49152, 65535)
+            self._bar()
+            self._info("No connection.json detected.")
+            self._notice("Asking for database connection information...")
+            tunneling = typer.prompt("Will you be connecting over an SSH tunnel?", type=bool)
+            suggested_port = random.randint(49152, 65535) if tunneling else 3306
             conn = dict(
-                database="valar",
-                user=typer.prompt("connection username", type=str),
-                password=typer.prompt("connection password", type=str),
-                host=typer.prompt("connection hostname", type=str, default="127.0.0.1"),
-                port=typer.prompt(
-                    f"connection port (49152–65535) [how about: {rand}?]", type=int, default=3306
-                ),
+                database=typer.prompt("Database name", type=str, default="valar"),
+                user=typer.prompt("Database username", type=str),
+                password=typer.prompt("Database password", type=str),
+                host=typer.prompt("Database hostname", type=str, default="127.0.0.1"),
+                port=typer.prompt("Database port", type=int, default=suggested_port),
             )
             conn_file.write_bytes(orjson.dumps(conn, option=orjson.OPT_INDENT_2))
             self.n_created += 1
+            self._info(f"Wrote {conn_file}")
+            # this is a bit confusing
+            # if they want to set up a tunnel, we're not asking for info if the config file exists
+            if tunneling and config_file.exists():
+                self._info(f"{config_file} found. Edit it for SSH tunnel setup.")
+            self._bar()
         if not config_file.exists():
-            typer.echo("No sauronlab.config detected. Asking for that info:")
-            user = typer.prompt("username in valar.users (e.g. 'john')", type=str)
+            self._bar()
+            self._info("No sauronlab.config detected.")
+            self._notice("Asking for misc information...")
+            if tunneling is None:
+                # if we didn't find out before, we need to know now
+                tunneling = typer.prompt("Will you be connecting over an SSH tunnel?", type=bool)
+            if tunneling:
+                tunnel_host = typer.prompt(
+                    f"Remote hostname of SSH tunnel.\n"
+                    f"This should match a hostname or alias in {ssh_config_file}",
+                    default="valinor",
+                )
+                if not ssh_config_file.is_file() or tunnel_host not in ssh_config_file.read_text(
+                    encoding="utf8"
+                ):
+                    self._error(f"NOTE: '{tunnel_host}' is not listed in {ssh_config_file}")
+                    self._error(
+                        "See https://dmyersturnbull.github.io/macos-setup/#security-ssh--gpg for an example."
+                    )
+                tunnel_port = typer.prompt(
+                    "Port on the remote host. "
+                    "Change this only if the database is configured differently.",
+                    default="3306",
+                )
+            else:
+                # we need some values
+                tunnel_host = "3306"
+                tunnel_port = "valinor"
+            self._notice("Miscellaneous info...")
+            user = typer.prompt("username in `valar.users` (e.g. 'john')", type=str)
             shire_path = typer.prompt(
-                "Path to video store (e.g. '/shire' or 'none')", default="none"
+                "Path to video store.\n"
+                "This could be a path to a mounted share (e.g. `/shire`), "
+                "an explicit Samba URI (e.g. `/192.234.342/my-data/shire`), "
+                "or a path over SSH (e.g. `valinor:/shire`).\n"
+                "If you do not have access, leave as 'none'.",
+                default="none",
             )
-            tunnel_host = typer.prompt("Remote hostname for SSH tunnel", default="valinor")
-            tunnel_port = typer.prompt("Remote port for tunnel (49152–65535)", default="3306")
             data = (
                 SauronlabResources.path("templates", "sauronlab.config")
                 .read_text(encoding="utf8")
@@ -63,6 +104,7 @@ class Installer:
                 .replace("$${tunnel_host}", tunnel_host)
                 .replace("$${tunnel_port}", str(tunnel_port))
             )
+            # remove the line completely
             if shire_path is None:
                 data = data.replace("shire_path = none", "")
             config_file.write_text(data)
@@ -80,21 +122,34 @@ class Installer:
             SauronlabResources.path("styles", "default.properties"),
         )
         if self.n_created > 0:
-            typer.echo("Finished. Edit these files as needed.")
+            self._info("Finished. Edit these files as needed.")
         else:
-            typer.echo("Finished. You already have all required config files.")
+            self._info("Finished. You already have all required config files.")
+
+    def _notice(self, msg: str) -> None:
+        typer.echo(typer.style(msg, bold=True))
+
+    def _bar(self) -> None:
+        typer.echo(typer.style("-" * 100, bold=True))
+
+    def _info(self, msg: str) -> None:
+        typer.echo(msg)
+
+    def _success(self, msg: str) -> None:
+        typer.echo(typer.style(msg, fg=typer.colors.BLUE, bold=True))
+
+    def _error(self, msg: str) -> None:
+        typer.echo(typer.style(msg, fg=typer.colors.RED, bold=True))
 
     def _copy_if(self, dest: Path, source: Path) -> None:
-        import shutil
-
         if dest.exists():
-            typer.echo(f"Skipped {dest}")
+            self._info(f"Skipped {dest}")
             return
         # noinspection PyTypeChecker
         dest.parent.mkdir(parents=True, exist_ok=True)
         # noinspection PyTypeChecker
         shutil.copy(source, dest)
-        typer.echo(f"Copied {source} → {dest}")
+        self._info(f"Copied {source} → {dest}")
         self.n_created += 1
 
 
