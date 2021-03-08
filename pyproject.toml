@@ -101,7 +101,7 @@ coverage                 = {extras = ["toml"], version = "^5"}
 pytest-cov               = "^2"
 flake8                   = "^3"
 flake8-docstrings        = "^1"
-flake8-bugbear           = "^20"
+flake8-bugbear           = "^21"
 sphinx                   = "^3"
 sphinx-autoapi           = "^1"
 sphinx-copybutton        = ">=0.3, <1.0"
