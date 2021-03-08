@@ -1,6 +1,6 @@
 # Check out https://pre-commit.com/ for documentation
 # and https://pre-commit.com/hooks.html for more hooks
-minimum_pre_commit_version: 2.9.0
+minimum_pre_commit_version: 2.11.0
 # Don't set language_version -- it's only useful if we have multiple
 # python versions or our build uses a different env than runtime
 repos:

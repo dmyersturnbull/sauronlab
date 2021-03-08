@@ -1,7 +1,8 @@
 from sauronlab.core.core_imports import *
 from sauronlab.extras.video_core import VideoCore
 from sauronlab.model.cache_interfaces import AVideoCache
-from sauronlab.extras.videos import *
+from sauronlab.extras.videos import SauronxVideos, SauronxVideo
+from sauronlab.extras.addon_tools import AddonTools
 
 DEFAULT_SHIRE_STORE = PurePath(sauronlab_env.shire_path) / "store"
 
@@ -147,8 +148,8 @@ class VideoCache(AVideoCache):
 
         """
         try:
-            ValarTools.download_file(remote_path, local_path, False)
-            ValarTools.download_file(
+            AddonTools.download_file(remote_path, local_path, False)
+            AddonTools.download_file(
                 str(remote_path) + ".sha256", str(local_path) + ".sha256", False
             )
         except Exception as e:

@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import moviepy.video.fx.crop as crop_fx
 from matplotlib.colors import to_rgb
-from moviepy.audio.AudioClip import CompositeAudioClip
-from moviepy.video.io.VideoFileClip import VideoFileClip
 
 from sauronlab.model.cache_interfaces import ASauronxVideo
 from sauronlab.core.core_imports import *
@@ -51,6 +49,8 @@ def _concat_audio(clips):
     Returns:
 
     """
+    from moviepy.audio.AudioClip import CompositeAudioClip
+
     if len(clips) == 0:
         return None
     newclips = []
@@ -135,7 +135,7 @@ class SauronxVideo(ASauronxVideo):
         self,
         path: PathLike,
         run: RunLike,
-        video: VideoFileClip,
+        video,
         roi_ref: RefLike,
         starts_at_ms: int,
         ends_at_ms: int,
@@ -154,7 +154,7 @@ class SauronxVideo(ASauronxVideo):
         Args:
             path:
             run:
-            video:
+            video: A VideoFileClip
             roi_ref:
             starts_at_ms:
             ends_at_ms:
@@ -168,6 +168,8 @@ class SauronxVideo(ASauronxVideo):
             wf:
             meta:
         """
+        from moviepy.video.io.VideoFileClip import VideoFileClip
+
         self.path = Path(path)
         self.run = Tools.run(run, join=True)
         self.generation = ValarTools.generation_of(self.run)
@@ -176,7 +178,7 @@ class SauronxVideo(ASauronxVideo):
             logger.warning(
                 f"Run r{self.run.id} is generation {self.generation.name}; the ROIs might be wrong."
             )
-        self.video = video
+        self.video: VideoFileClip = video
         self.roi_ref = Refs.fetch(roi_ref)
         self.rois: Mapping[str, Rois] = {
             self.wb1.index_to_label(roi.well.well_index): roi
@@ -771,6 +773,8 @@ class SauronxVideos:
         Returns:
 
         """
+        from moviepy.video.io.VideoFileClip import VideoFileClip
+
         run = Tools.run(run, join=True)
         generation = ValarTools.generation_of(run)
         roi_ref = "hardware:sauronx" if generation.is_sauronx() else "hardware:legacy"

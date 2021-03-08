@@ -1,6 +1,5 @@
 import pydub
 import soundfile
-from moviepy.audio.io.AudioFileClip import AudioClip, AudioFileClip
 
 from sauronlab.core.core_imports import *
 from sauronlab.core.environment import sauronlab_env
@@ -94,23 +93,6 @@ class AudioStimulusCache(AnAudioStimulusCache):
             except Exception:
                 raise DataIntegrityError(f"Audio file for stimulus {stimulus.name} is invalid")
             song.export(tmpfile, format=fmt_str)
-
-    @abcd.overrides
-    def load_moviepy(self, stimulus: StimulusLike) -> AudioClip:
-        """
-
-
-        Args:
-            stimulus: StimulusLike:
-
-        Returns:
-
-        """
-        fetched = self.load(stimulus)
-        try:
-            return AudioFileClip(fetched)
-        except Exception:
-            raise DataIntegrityError(f"Failed load stimulus {stimulus} as an AudioFileClip")
 
     @abcd.overrides
     def load_pydub(self, stimulus: StimulusLike) -> pydub.AudioSegment:
