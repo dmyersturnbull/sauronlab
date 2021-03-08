@@ -41,7 +41,7 @@ For a suggested setup, see
 
 Sauronlab is best installed via pip and [poetry](https://python-poetry.org).
 The simplest way is:
-`pip install git+https://github.com/dmyersturnbull/sauronlab.git/main[perf,extras]`.
+`pip install git+https://github.com/dmyersturnbull/sauronlab.git/main[extras]`.
 Equally good is [sauronlab-env.yml](https://github.com/dmyersturnbull/sauronlab/blob/main/sauronlab-env.yml)
 via `conda env create --file=https://raw.githubusercontent.com/dmyersturnbull/sauronlab/main/sauronlab-env.yml`.
 This will create a new environment called _sauronlab_.
@@ -49,7 +49,10 @@ This will create a new environment called _sauronlab_.
 The latter is intended only for exact replication of the analyses used for the manuscript.)
 
 Run `sauronlab init` to finalize the installation.
-If you are using a local database, ignore _tunnel-host_ and _tunnel-port_.
+If you will be connecting to a database over SSH, use the suggested random value for _connection port_,
+and leave _connection host_, _tunnel host_ and _tunnel port_ as their defaults.
+The _tunnel host_ should be an alias in your SSH config (e.g. _valinor_ or _valinor.ucsf.edu_).
+(The _tunnel host_ and _tunnel port_ refer to the remote server accessed over SSH.)
 Leave `shire` as `none` unless you have access to a raw data hierarchy.
 Some files were created under `~/.sauronlab`.
 Take a look and edit the files if needed.

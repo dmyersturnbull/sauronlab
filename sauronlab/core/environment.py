@@ -112,7 +112,7 @@ class SauronlabEnvironment:
         props = PropSet.read(self.config_file)
         # fmt: off
         self.whereami                 = Path(__file__).parent.parent
-        self.valarpy_path             = Valar.find_extant_path(os.environ.get("VALARPY_CONFIG"))
+        self.valarpy_path             = Path(props.str("valarpy_config", MAIN_DIR / "connection.json"))
         self.valarpy_data             = FilesysTools.load_json(self.valarpy_path)
         self.tunnel_host              = props.str_nullable("tunnel_host", None)
         self.tunnel_port              = props.str_nullable("tunnel_port", None)
