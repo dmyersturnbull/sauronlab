@@ -82,7 +82,7 @@ moviepy                        = {version=">=1.0, <2.0", optional=true}
 seaborn                        = ">=0.11, <1.0"
 
 decorateme                     = ">=0.2, <1.0"
-typeddfs                       = {git="https://github.com/dmyersturnbull/typed-dfs.git", tag = "v0.6.0-alpha.1"}
+typeddfs                       = ">=0.6.1, <0.7"
 # we're actually using "biochem" too, but we don't need any extra dependencies
 pocketutils                    = {git="https://github.com/dmyersturnbull/pocketutils.git", tag="v0.5.0-snapshot", extras=["tools", "notebooks", "plotting"]}
 valarpy                        = {git="https://github.com/dmyersturnbull/valarpy.git", tag = "v3.0.0-alpha.1"}
