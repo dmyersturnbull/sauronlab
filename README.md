@@ -54,6 +54,14 @@ It will walk you through and ask some questions,
 generating config files under `~/.sauronlab`.
 You can edit the those files for [additional configuration](#-additional-configuration).
 
+**Jupyter setup:**
+
+You may want to run `python -m ipykernel install --user --name=sauronlab`
+to add the environment to Jupyter.
+
+If you are using Windows, navigate to your Anaconda environment under
+`<ANACONDA-INSTALL-DIR>/envs/sauronlab/Scripts` and run `python pywin32_postinstall.py -install`.
+
 **📝 Technical note:**
 Sauronlab is available on both [conda-forge](https://anaconda.org/conda-forge/sauronlab)
 and [PyPi](http://pypi.org/project/sauronlab).

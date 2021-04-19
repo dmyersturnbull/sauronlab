@@ -48,9 +48,8 @@ import sklearn
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from natsort import natsorted
+from typeddfs import TypedDfs
 from pocketutils.biochem.multiwell_plates import *
-
-# pocketutils
 from pocketutils.core import frozenlist
 from pocketutils.core.dot_dict import *
 from sklearn.ensemble import RandomForestClassifier
@@ -137,6 +136,20 @@ from sauronlab.viz.well_plots import *
 # and this was reset
 logging.getLogger().setLevel(sauronlab_env.global_log_level)
 
+# redirect loguru logging to std logging
+
+from loguru import logger as logurul
+
+logurul.remove()
+
+
+class _PropagateHandler(logging.Handler):
+    def emit(self, record):
+        logging.getLogger(record.name).handle(record)
+
+
+logurul.add(_PropagateHandler(), format="{message}", level=0)
+
 # I don't know why this needs to happen twice
 __filterer.substring_never(".*libuv only supports.*")
 
@@ -144,7 +157,6 @@ __filterer.substring_never(".*libuv only supports.*")
 # let's keep it between 1 and min(6, nCPU-1)
 # setting this has the advantage of silencing the "NumExpr defaulting to 8 threads." logging
 os.environ.setdefault("NUMEXPR_MAX_THREADS", str(max(1, min(6, os.cpu_count() - 1))))
-
 
 ################################
 # startup messages
