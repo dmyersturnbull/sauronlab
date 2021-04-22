@@ -24,7 +24,11 @@ class WellCache(AWellCache):
     """
 
     def __init__(
-        self, feature: FeatureTypeLike, cache_dir: PathLike = DEFAULT_CACHE_DIR, dtype=None
+        self,
+        feature: FeatureTypeLike,
+        cache_dir: PathLike = DEFAULT_CACHE_DIR,
+        dtype=None,
+        sensor_cache: Optional[ASensorCache] = None,
     ):
         """
 
@@ -38,7 +42,7 @@ class WellCache(AWellCache):
         cache_dir = Path(cache_dir) / ("-" if self.feature is None else self.feature.internal_name)
         self._cache_dir = Tools.prepped_dir(cache_dir)
         self._dtype = dtype
-        self._sensor_cache = None
+        self._sensor_cache = sensor_cache
 
     @abcd.overrides
     def with_sensor_cache(self, sensor_cache: Optional[ASensorCache] = None) -> WellCache:

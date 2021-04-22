@@ -162,6 +162,12 @@ os.environ.setdefault("NUMEXPR_MAX_THREADS", str(max(1, min(6, os.cpu_count() - 
 # startup messages
 ################################
 
+try:
+    import soundfile
+except ImportError:
+    logger.exception(f"Cannot import soundfile. This will prevent some code from functioning.")
+
+
 logger.notice(
     f"Sauronlab version {sauronlab_version.strip()}. Started in {round(time.monotonic() - sauronlab_start_clock)}s."
 )

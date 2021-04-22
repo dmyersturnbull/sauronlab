@@ -182,8 +182,9 @@ class OptisepDataset(SauronlabDataset, metaclass=abc.ABCMeta):
         sep = datetime(2018, 3, 24)
         # noinspection PyTypeChecker
         where: ExpressionLike = Experiments.id == self.training_experiment
+        cache = WellCache("cd(10)", dtype=np.float32, sensor_cache=SensorCache())
         query = (
-            CachingWellFrameBuilder(WellCache("cd(10)"), today)
+            CachingWellFrameBuilder(cache, today)
             .with_feature("cd(10)")
             .where(where)
             .with_compound_names(SauronlabDatasetTools.qc_compound_namer(today))
@@ -204,8 +205,9 @@ class LeoDataset1(SauronlabDataset):
         """ """
         today = datetime(2019, 6, 17)
         n_replicates = 5
+        cache = WellCache("cd(10)", dtype=np.float32, sensor_cache=SensorCache())
         df = (
-            CachingWellFrameBuilder(WellCache("cd(10)"), today)
+            CachingWellFrameBuilder(cache, today)
             .with_feature("cd(10)", np.float32)
             .where(Projects.name == "reference :: Leo BIOMOL")
             .where(~(Runs.id << [5315, 6315]))
@@ -229,8 +231,9 @@ class LeoDataset2(SauronlabDataset):
         """ """
         pattern = re.compile(r".*BM ([0-9]{1,2})\.([1-9]{1,2}).*")
         today = datetime(2019, 10, 30)
+        cache = WellCache("cd(10)-i", dtype=np.float32, sensor_cache=SensorCache())
         df = (
-            CachingWellFrameBuilder(WellCache("cd(10)-i").with_dtype(np.float16), today)
+            CachingWellFrameBuilder(cache, today)
             .with_feature("cd(10)-i", np.float32)
             .where(Projects.id == 780)
             .where(
@@ -302,8 +305,9 @@ class _SimpleFlamesDataset(SauronlabDataset):
     def _download(self):
         """ """
         today = datetime(2019, 9, 1)
+        cache = WellCache("cd(10)-i", dtype=np.float32, sensor_cache=SensorCache())
         query = (
-            CachingWellFrameBuilder(WellCache("cd(10)-i"), today)
+            CachingWellFrameBuilder(cache, today)
             .with_feature("cd(10)-i")
             .with_sensor_cache(self.sensor_cache)
             .with_compound_names(self.compound_namer)

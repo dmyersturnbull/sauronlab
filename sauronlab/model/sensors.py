@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from PIL import Image, ImageDraw
 from scipy.interpolate import interp1d
-import soundfile
 
 from sauronlab.core.core_imports import *
 from sauronlab.core.valar_singleton import *
@@ -94,9 +93,7 @@ class ExpectedBatteryTimeData(_AbsBatteryTimeData):
 class SauronlabSensor:
     """"""
 
-    def __init__(
-        self, run: RunLike, sensor_data: Union[SensorDataLike, Image.Image, soundfile.SoundFile]
-    ):
+    def __init__(self, run: RunLike, sensor_data: Union[SensorDataLike, Image.Image]):
         """
         Sensor wrapper object that holds converted sensor_data for a given run.
 

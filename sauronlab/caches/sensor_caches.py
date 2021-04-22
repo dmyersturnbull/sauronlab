@@ -1,4 +1,3 @@
-import soundfile
 from PIL import Image
 
 from sauronlab.core.core_imports import *
@@ -227,6 +226,8 @@ class SensorCache(ASensorCache):
         return waveform_sensor
 
     def _load_audio(self, run: Runs) -> MicrophoneSensor:
+        import soundfile
+
         self._download_raw(SensorNames.RAW_MICROPHONE_RECORDING, run)
         # TODO figure out why 1024
         millis = np.repeat(self._download_raw(SensorNames.RAW_MICROPHONE_MILLIS, run), 1024)

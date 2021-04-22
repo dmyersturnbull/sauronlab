@@ -6,10 +6,9 @@ from pathlib import Path
 from subprocess import check_call, DEVNULL
 from typing import List
 
-import orjson
 import typer
 
-from sauronlab.core import SauronlabResources, log_factory, logger
+from sauronlab.core import SauronlabResources, log_factory, logger, Json
 
 ch = logging.StreamHandler()
 logger.addHandler(ch)
@@ -49,7 +48,7 @@ class Installer:
                 host=typer.prompt("Database hostname", type=str, default="127.0.0.1"),
                 port=typer.prompt("Database port", type=int, default=suggested_port),
             )
-            conn_file.write_bytes(orjson.dumps(conn, option=orjson.OPT_INDENT_2))
+            Json.to_file(conn, conn_file)
             self.n_created += 1
             self._info(f"Wrote {conn_file}")
             # this is a bit confusing
@@ -165,7 +164,7 @@ class Commands:
         from pocketutils.tools.filesys_tools import FilesysTools
 
         config = FilesysTools.read_properties_file(MAIN_DIR / "sauronlab.config")
-        vpy = orjson.loads((MAIN_DIR / "connection.json").read_text(encoding="utf8"))
+        vpy = Json.from_file(MAIN_DIR / "connection.json")
         if "tunnel_host" not in config or "tunnel_port" not in config:
             raise ValueError(f"Tunnel host or port in sauronlab.config missing")
         host, port = vpy["host"], vpy["port"]

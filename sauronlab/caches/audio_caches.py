@@ -1,5 +1,4 @@
 import pydub
-import soundfile
 
 from sauronlab.core.core_imports import *
 from sauronlab.core.environment import sauronlab_env
@@ -122,6 +121,8 @@ class AudioStimulusCache(AnAudioStimulusCache):
         Returns:
 
         """
+        import soundfile
+
         stimulus = Stimuli.fetch(stimulus)
         path = self.load(stimulus)
         try:

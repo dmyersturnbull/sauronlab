@@ -62,6 +62,10 @@ to add the environment to Jupyter.
 If you are using Windows, navigate to your Anaconda environment under
 `<ANACONDA-INSTALL-DIR>/envs/sauronlab/Scripts` and run `python pywin32_postinstall.py -install`.
 
+On Linux, you may need to install the [Rust toolchain](https://rustup.rs/) and the
+[sndfile](https://en.wikipedia.org/wiki/Libsndfile) library.
+It is possible for these to be needed on macOS and Windows, too.
+
 **📝 Technical note:**
 Sauronlab is available on both [conda-forge](https://anaconda.org/conda-forge/sauronlab)
 and [PyPi](http://pypi.org/project/sauronlab).

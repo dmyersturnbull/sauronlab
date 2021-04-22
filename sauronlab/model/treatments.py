@@ -1,8 +1,7 @@
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
-
-import orjson
 
 from sauronlab.core.core_imports import *
 
@@ -32,17 +31,17 @@ class Treatment:
         if isinstance(source, Treatment):
             return source
         if isinstance(source, str):
-            data = orjson.loads(source)
+            data = Json.from_str(source)
         else:
             data = source  # dict
         try:
             return cls(**data)
-        except orjson.JSONDecodeError:
+        except json.JSONDecodeError:
             logger.error(f"Failed to decode '{source}'")
             raise
 
     def serialize(self) -> str:
-        return orjson.dumps(
+        return Json.to_str(
             dict(
                 cid=self.cid,
                 bid=self.bid,
@@ -52,7 +51,7 @@ class Treatment:
                 inchikey=self.inchikey,
                 chembl=self.chembl,
             )
-        ).decode("utf-8")
+        )
 
     @classmethod
     def from_well_treatment(cls, condition: WellTreatments) -> Treatment:
@@ -146,9 +145,9 @@ class Treatments:
         if isinstance(source, Treatments):
             return source
         try:
-            data = orjson.loads(source)
+            data = Json.from_str(source)
             data = [Treatment.deserialize(t) for t in data["treatments"]]
-        except orjson.JSONDecodeError:
+        except json.JSONDecodeError:
             logger.error(f"Failed to decode {source}")
             raise
         return cls(treatments=data)

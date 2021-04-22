@@ -1,5 +1,3 @@
-import soundfile
-
 from sauronlab.core.core_imports import *
 from sauronlab.model.audio import Waveform
 
